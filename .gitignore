@@ -1,0 +1,32 @@
+# PyCharm
+.idea/
+*.iml
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.swp
+.DS_Store
+.vscode/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log
+pnpm-debug.log*
+dist/
+build/
+.cache/
+.next/
+out/
+coverage/
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs/
+*.log
+yarn-debug.log*

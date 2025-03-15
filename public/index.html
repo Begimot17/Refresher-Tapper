@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refresher Tapper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔥Refresher Tap🔥</h1>
+        <div class="score-board">
+            <div>Счет: <span id="score">0</span></div>
+            <div>Монеты: <span id="coins">0</span></div>
+            <div>Уровень: <span id="level">1</span></div>
+        </div>
+
+        <div id="tap-circle" class="tap-circle">
+            <img id="tap-image" src="images/bogdan.jpg" alt="Tap Image">
+        </div>
+
+        <div class="shop">
+            <button class="btn" onclick="openShop()">Магазин 🛒</button>
+            <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
+            <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="modal">
+        <div class="modal-content">
+            <h2>Магазин улучшений</h2>
+            <div class="upgrade" onclick="buyUpgrade('multiplier')">
+                ×2 Множитель (50 монет)
+            </div>
+            <div class="upgrade" onclick="buyUpgrade('auto-click')">
+                Автоклик (100 монет)
+            </div>
+            <button class="btn close" onclick="closeShop()">Закрыть</button>
+        </div>
+    </div>
+
+    <audio id="tap-sound" src="sounds/tap-sound.mp3"></audio>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
