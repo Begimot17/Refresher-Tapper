@@ -8,7 +8,7 @@ WEB_APP_URL = os.getenv("WEB_APP_URL")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Добро пожаловать в Tap Attack!",
+        "Добро пожаловать в Refresher Tapper!",
         reply_markup={
             "inline_keyboard": [[{
                 "text": "🎮 Начать игру",
