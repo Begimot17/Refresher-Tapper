@@ -1,6 +1,7 @@
 let score = 0;
 let coins = 0;
 let level = 1;
+let coin_for_level = 10;
 let xp = 0;
 let multiplier = 1;
 let autoClickerActive = false;
@@ -119,16 +120,13 @@ tapCircle.addEventListener('click', (event) => {
     tapSound.currentTime = 0;
     tapSound.play();
 
-    // Получаем координаты клика относительно окна браузера
     const x = event.clientX;
     const y = event.clientY;
 
-    // Создаем эффект клика
     createTapEffect(x, y);
 
-    // Обновляем счет
-    updateScore(multiplier); // Используем новую функцию
-    updateCoins(multiplier); // Используем новую функцию
+    updateScore(multiplier);
+    updateCoins(multiplier);
     xp += multiplier;
     checkLevelUp();
 });
@@ -149,34 +147,17 @@ function checkLevelUp() {
     if (xp >= neededXP) {
         updateLevel()
         xp -= neededXP;
-        coins += 10;
-
+        coins += coin_for_level;
         showLevelUpPopup()
-        updateUI(); // Добавлено здесь
-
-        // Создаем эффект уровня
+        updateUI();
         createLevelUpEffect();
-
-        // Проверяем, разблокирован ли новый персонаж
-        const newCharacter = getCharacterForLevel(level);
-        if (newCharacter && (!selectedCharacter || newCharacter.entryLevel > selectedCharacter.entryLevel)) {
-            console.log(`Новый персонаж разблокирован: ${newCharacter.name}`);
-            showNewCharacterPopup(newCharacter);
-            selectedCharacter = newCharacter; // Автоматически выбираем нового персонажа
-            updateImage(); // Меняем изображение
-            saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
-        }
-
-        saveProgress();
     }
 }
 
 function showPopup(elementId, value) {
     const popup = document.getElementById(elementId);
-    popup.textContent = `+${value}`; // Показываем значение
-    popup.classList.add('show'); // Добавляем класс для анимации
-
-    // Убираем сообщение через 1 секунду
+    popup.textContent = `+${value}`;
+    popup.classList.add('show');
     setTimeout(() => {
         popup.classList.remove('show');
     }, 1000);
@@ -185,19 +166,19 @@ function showPopup(elementId, value) {
 function updateScore(points) {
     score += points;
     scoreElement.textContent = formatNumber(score);
-    showPopup('score-popup', points); // Показываем всплывающее сообщение
+    showPopup('score-popup', points);
 }
 
 function updateCoins(coinsAdded) {
     coins += coinsAdded;
     coinsElement.textContent = formatNumber(coins);
-    showPopup('coins-popup', coinsAdded); // Показываем всплывающее сообщение
+    showPopup('coins-popup', coinsAdded);
 }
 
 function updateLevel() {
     level++;
     levelElement.textContent = formatNumber(level);
-    showPopup('level-popup', 1); // Показываем всплывающее сообщение
+    showPopup('level-popup', 1);
 }
 
 function buyUpgrade(upgradeId) {
@@ -207,22 +188,19 @@ function buyUpgrade(upgradeId) {
         return;
     }
 
-    const currentLevel = getUpgradeLevel(upgradeId); // Получаем текущий уровень улучшения
+    const currentLevel = getUpgradeLevel(upgradeId);
     const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
 
     if (coins >= cost) {
         coins -= cost;
-        increaseUpgradeLevel(upgradeId); // Увеличиваем уровень улучшения
+        increaseUpgradeLevel(upgradeId);
 
-        // Применяем эффект улучшения
         applyUpgradeEffect(upgrade.effect);
 
-        // Создаем эффект улучшения
         const rect = document.querySelector(`.upgrade[data-id="${upgradeId}"]`).getBoundingClientRect();
         createUpgradeEffect(`${upgrade.icon} ${upgrade.name} улучшен!`, rect.left + 50, rect.top);
 
         updateUI();
-        saveProgress();
     } else {
         showError('Недостаточно монет для покупки улучшения.');
     }
@@ -231,17 +209,17 @@ function buyUpgrade(upgradeId) {
 function getUpgradeLevel(upgradeId) {
     switch (upgradeId) {
         case 'multiplier':
-            return multiplierCount || 0; // Возвращаем количество купленных множителей
+            return multiplierCount || 0;
         case 'auto-click':
-            return autoClickerCount || 0; // Возвращаем количество купленных автокликеров
+            return autoClickerCount || 0;
         case 'critical-hit':
-            return criticalHitCount || 0; // Возвращаем уровень критического удара
+            return criticalHitCount || 0;
         case 'coin-bonus':
-            return coinBonusCount || 0; // Возвращаем уровень бонуса монет
+            return coinBonusCount || 0;
         case 'xp-boost':
-            return xpBoostCount || 0; // Возвращаем уровень ускорения опыта
+            return xpBoostCount || 0;
         default:
-            return 0; // Если улучшение не найдено, возвращаем 0
+            return 0;
     }
 }
 
@@ -295,57 +273,41 @@ function applyMultiplierEffect() {
 
 function applyAutoClickerEffect() {
     if (!autoClickerActive) {
-        autoClickerActive = true; // Активируем автокликер
+        autoClickerActive = true;
         setInterval(() => {
-            // Автоматически добавляем очки, монеты и опыт
             score += multiplier;
             coins += multiplier;
             xp += multiplier;
 
-            // Проверяем, достигнут ли новый уровень
             checkLevelUp();
-
-            // Обновляем интерфейс
             updateUI();
 
-            // Сохраняем прогресс
-            saveProgress();
-        }, 1000); // Интервал в 1 секунду
+        }, 1000);
         console.log('Автокликер активирован!');
     }
 }
 
 function applyCriticalHitEffect() {
-    // Увеличиваем шанс критического удара
-    const criticalHitChance = 0.1 + (criticalHitCount * 0.05); // Базовый шанс 10% + 5% за каждый уровень
-    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5); // Базовый множитель x2 + 0.5 за каждый уровень
+    const criticalHitChance = 0.1 + (criticalHitCount * 0.05);
+    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5);
 
     // Переопределяем функцию обработки клика
-    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
-    tapCircle.addEventListener('click', handleTap); // Добавляем новый
+    tapCircle.removeEventListener('click', handleTap);
+    tapCircle.addEventListener('click', handleTap);
 
     function handleTap(event) {
         tapSound.currentTime = 0;
         tapSound.play();
-
-        // Создаем эффект клика
         createTapEffect(event.clientX, event.clientY);
-
-        // Проверяем, сработал ли критический удар
         if (Math.random() < criticalHitChance) {
             const criticalScore = multiplier * criticalHitMultiplier;
             const criticalCoins = multiplier * criticalHitMultiplier;
             const criticalXp = multiplier * criticalHitMultiplier;
-
-            // Добавляем очки, монеты и опыт с учетом критического удара
             updateScore(criticalScore);
             updateCoins(criticalCoins);
             xp += criticalXp;
-
-            // Показываем эффект критического удара
             createCriticalHitEffect(event.clientX, event.clientY);
         } else {
-            // Обычный клик
             updateScore(multiplier);
             updateCoins(multiplier);
             xp += multiplier;
@@ -359,23 +321,15 @@ function applyCriticalHitEffect() {
 
 function applyCoinBonusEffect() {
     const coinBonusMultiplier = 1 + (coinBonusCount * 0.2); // +20% монет за каждый уровень
-
-    // Переопределяем функцию обработки клика
     tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
     tapCircle.addEventListener('click', handleTap); // Добавляем новый
 
     function handleTap(event) {
         tapSound.currentTime = 0;
         tapSound.play();
-
-        // Создаем эффект клика
         createTapEffect(event.clientX, event.clientY);
-
-        // Добавляем очки и опыт
         updateScore(multiplier);
         xp += multiplier;
-
-        // Добавляем монеты с учетом бонуса
         const coinsEarned = multiplier * coinBonusMultiplier;
         updateCoins(coinsEarned);
 
@@ -388,22 +342,16 @@ function applyCoinBonusEffect() {
 function applyXpBoostEffect() {
     const xpBoostMultiplier = 1 + (xpBoostCount * 0.3); // +30% опыта за каждый уровень
 
-    // Переопределяем функцию обработки клика
     tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
     tapCircle.addEventListener('click', handleTap); // Добавляем новый
 
     function handleTap(event) {
         tapSound.currentTime = 0;
         tapSound.play();
-
-        // Создаем эффект клика
         createTapEffect(event.clientX, event.clientY);
-
-        // Добавляем очки и монеты
         updateScore(multiplier);
         updateCoins(multiplier);
 
-        // Добавляем опыт с учетом ускорения
         const xpEarned = multiplier * xpBoostMultiplier;
         xp += xpEarned;
 
@@ -455,7 +403,7 @@ function renderShop() {
 }
 
 function openShop() {
-    renderShop(); // Отрисовываем улучшения
+    renderShop();
     document.getElementById('shop-modal').style.display = 'block'; // Показываем модальное окно
 }
 
@@ -473,7 +421,6 @@ function showLeaderboard() {
                     const li = document.createElement('li');
                     const usernameLink = document.createElement('a');
 
-                    // Формируем ссылку на профиль Telegram
                     usernameLink.href = `https://t.me/${player.username}`;
                     usernameLink.textContent = `@${player.username || 'unknown'}`;
                     usernameLink.style.textDecoration = 'none';
@@ -481,12 +428,10 @@ function showLeaderboard() {
                     usernameLink.style.cursor = 'pointer';
                     usernameLink.target = '_blank'; // Открывать ссылку в новой вкладке
 
-                    // Добавляем номер места
                     const placeNumber = document.createElement('span');
                     placeNumber.textContent = `${index + 1}. `;
                     li.appendChild(placeNumber);
 
-                    // Добавляем эмодзи для первых трех мест
                     if (index === 0) {
                         const goldMedal = document.createElement('span');
                         goldMedal.textContent = '🥇 ';
@@ -546,7 +491,7 @@ function saveProgress() {
         criticalHitCount,
         coinBonusCount,
         xpBoostCount
-    }; // Добавляем username в данные
+    };
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
 
@@ -621,7 +566,6 @@ function updateUI() {
     coinsElement.textContent = formatNumber(coins);
     levelElement.textContent = formatNumber(level);
 
-    // Обновляем стоимость и количество улучшений
     shopConfig.upgrades.forEach(upgrade => {
         const currentLevel = getUpgradeLevel(upgrade.id);
         const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
@@ -640,7 +584,7 @@ function createTapEffect(x, y) {
     effect.style.left = `${x}px`;
     effect.style.top = `${y}px`;
     document.body.appendChild(effect);
-    setTimeout(() => effect.remove(), 500);
+    setTimeout(() => effect.remove(), 1000);
 }
 
 function createUpgradeEffect(text, x, y) {
@@ -682,7 +626,6 @@ function showNewCharacterPopup(character) {
     document.body.appendChild(popup);
 }
 
-let previousCharacter = null;
 
 function getCharacterForLevel(currentLevel) {
     let unlockedCharacter = null;
@@ -736,10 +679,6 @@ function shareProgress() {
         return;
     }
 
-    const userId = user.id;
-    const username = user.username || 'unknown';
-
-    // Форматированный текст для шаринга
     const shareText = `
 🎮 *Мой прогресс в Refresher Tapper*:
 🔥 Счет: *${score}*
@@ -748,36 +687,31 @@ function shareProgress() {
 
 💪 Попробуй побить мой рекорд!
 👉 Перейди в бота: @bogdan_tapper_bot
-    `.trim(); // Убираем лишние пробелы
+    `.trim();
 
-    // Копируем текст в буфер обмена
     copyToClipboard(shareText);
 }
 
-// Открытие модального окна для выбора персонажа
 function openCharacterModal() {
     const characterList = document.getElementById('character-list');
     characterList.innerHTML = '';
 
-    // Определяем минимальный уровень, при котором откроется следующий персонаж
     const nextUnlockLevel = config.characters
         .map(character => character.entryLevel)
         .filter(lvl => lvl > level)
-        .sort((a, b) => a - b)[0]; // Берем минимальный из доступных уровней
+        .sort((a, b) => a - b)[0];
 
     config.characters.forEach(character => {
         const characterItem = document.createElement('div');
         characterItem.className = 'character-item';
 
         if (character.entryLevel <= level) {
-            // Открытые персонажи
             characterItem.innerHTML = `
                 <img src="${character.image}" alt="${character.name}">
                 <span>${character.name}</span>
             `;
             characterItem.onclick = () => selectCharacter(character);
         } else {
-            // Заблокированные персонажи
             characterItem.innerHTML = `
                 <div class="locked-character"></div>
                 <span>???</span>
@@ -788,7 +722,6 @@ function openCharacterModal() {
         characterList.appendChild(characterItem);
     });
 
-    // Проверяем, есть ли блок с информацией о следующем уровне, если нет — создаем
     let nextUnlockInfo = document.getElementById('next-unlock-info');
     if (!nextUnlockInfo) {
         nextUnlockInfo = document.createElement('div');
@@ -797,7 +730,6 @@ function openCharacterModal() {
         document.getElementById('character-modal').appendChild(nextUnlockInfo);
     }
 
-    // Показываем информацию о следующем уровне для открытия персонажа
     nextUnlockInfo.textContent = nextUnlockLevel
         ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
         : 'Все персонажи открыты';
@@ -806,12 +738,10 @@ function openCharacterModal() {
 }
 
 
-// Закрытие модального окна
 function closeCharacterModal() {
     document.getElementById('character-modal').style.display = 'none';
 }
 
-// Выбор персонажа
 function selectCharacter(character) {
     selectedCharacter = character; // Устанавливаем выбранного персонажа
     updateImage(); // Обновляем изображение
