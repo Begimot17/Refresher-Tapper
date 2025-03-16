@@ -1,8 +1,10 @@
 import TelegramLogin from 'telegram-login-button';
 
+require('dotenv').config();
+
 // Инициализация
 const telegramLogin = new TelegramLogin({
-    bot_id: 'ВАШ_BOT_ID',
+    bot_id: process.env.TOKEN,
     request_access: true
 });
 

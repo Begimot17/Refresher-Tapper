@@ -20,31 +20,24 @@ body {
     justify-content: center;
     font-size: 24px;
     box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-    border: none; /* Убираем границу */
-    outline: none; /* Убираем обводку по умолчанию */
-    -webkit-tap-highlight-color: transparent; /* Убираем подсветку при тапе на мобильных устройствах */
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
 
-/* Убираем синюю обводку при фокусе */
-#tap-circle:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-/* Убираем обводку при активном состоянии */
+#tap-circle:focus,
 #tap-circle:active {
     outline: none;
     box-shadow: none;
-    transform: scale(0.95); /* Анимация при клике */
+    transform: scale(0.95);
 }
 
-/* Стили для изображения внутри круга */
 #tap-circle img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    object-fit: cover; /* Чтобы изображение заполняло круг */
+    object-fit: cover;
 }
 
 .score-board {
@@ -90,4 +83,54 @@ body {
     margin: 10px 0;
     border-radius: 5px;
     cursor: pointer;
+}
+
+#leaderboard-modal .modal-content {
+    background: #34495e;
+    margin: 10% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+#leaderboard-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboard-list li {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    font-size: 18px;
+}
+
+#leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: white;
+}
+.level-up-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2ecc71;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 1000;
 }

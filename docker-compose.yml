@@ -3,26 +3,26 @@ version: '3.8'
 services:
   mongo:
     image: mongo:latest
-    container_name: tap_game_mongo
+    container_name: refresher_tapper_mongo
     restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017 --quiet
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - tap_game_network
+      - refresher_tapper_network
 
   server:
     build: ./server
-    container_name: tap_game_server
+    container_name: refresher_tapper_server
     ports:
       - "3000:3000"
     volumes:
@@ -31,22 +31,22 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      - MONGO_URI=mongodb://mongo:27017/tap-game
+      - MONGO_URI=${MONGO_URI}
     networks:
-      - tap_game_network
+      - refresher_tapper_network
 
   bot:
     build: ./bot
-    container_name: tap_game_bot
+    container_name: refresher_tapper_bot
     depends_on:
       - server
     environment:
-      - TOKEN=8136767554:AAHNlWcH6gKsx8JXp4amJfAw2eN-yZAARa4
-      - WEB_APP_URL=https://82d4-188-239-78-166.ngrok-free.app
+      - TOKEN=${TOKEN}
+      - WEB_APP_URL=${WEB_APP_URL}
     networks:
-      - tap_game_network
+      - refresher_tapper_network
 
 volumes:
   mongo_data:
 networks:
-  tap_game_network:
+  refresher_tapper_network:
