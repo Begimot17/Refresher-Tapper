@@ -39,17 +39,24 @@ const config = {
 };
 const tapSound = document.getElementById('tap-sound');
 
-tapCircle.addEventListener('click', () => {
+tapCircle.addEventListener('click', (event) => {
     tapSound.currentTime = 0;
     tapSound.play();
-    score += multiplier;
-    coins += multiplier;
+
+    // Получаем координаты клика относительно окна браузера
+    const x = event.clientX;
+    const y = event.clientY;
+
+    // Создаем эффект клика
+    createTapEffect(x, y);
+
+    // Обновляем счет
+    updateScore(multiplier); // Используем новую функцию
+    updateCoins(multiplier); // Используем новую функцию
     xp += multiplier;
     checkLevelUp();
-    updateUI();
     saveProgress();
 });
-
 function openShop() {
     document.getElementById('shop-modal').style.display = 'block';
 }
@@ -71,32 +78,92 @@ function checkLevelUp() {
     if (xp >= neededXP) {
         level++;
         xp -= neededXP;
+        updateLevel(); // Используем новую функцию
         coins += 10;
+        updateCoins(10); // Используем новую функцию
+
+        const currentCharacter = getCurrentCharacter();
+        if (previousCharacter !== currentCharacter.name) {
+            showNewCharacterPopup(currentCharacter);
+            previousCharacter = currentCharacter.name;
+        }
+
         updateImage();
-        showLevelUpPopup();
         saveProgress();
     }
 }
+function showPopup(elementId, value) {
+    const popup = document.getElementById(elementId);
+    popup.textContent = `+${value}`; // Показываем значение
+    popup.classList.add('show'); // Добавляем класс для анимации
 
+    // Убираем сообщение через 1 секунду
+    setTimeout(() => {
+        popup.classList.remove('show');
+    }, 1000);
+}
+function updateScore(points) {
+    score += points;
+    scoreElement.textContent = formatNumber(score);
+    showPopup('score-popup', points); // Показываем всплывающее сообщение
+}
+function updateCoins(coinsAdded) {
+    coins += coinsAdded;
+    coinsElement.textContent = formatNumber(coins);
+    showPopup('coins-popup', coinsAdded); // Показываем всплывающее сообщение
+}
+function updateLevel() {
+    level++;
+    levelElement.textContent = formatNumber(level);
+    showPopup('level-popup', 1); // Показываем всплывающее сообщение
+}
 function buyUpgrade(type) {
-    if (type === 'multiplier' && coins >= 50) {
-        coins -= 50;
-        multiplier += 1;
-        updateUI();
-        saveProgress();
-    }
+    let cost;
 
-    if (type === 'auto-click' && coins >= 100 && !autoClickerActive) {
-        coins -= 100;
-        autoClickerActive = true;
-        setInterval(() => {
-            score += multiplier;
-            coins += multiplier;
-            xp += multiplier;
-            checkLevelUp();
+    if (type === 'multiplier') {
+        cost = 50 + (multiplierCount * 50);
+        if (coins >= cost) {
+            coins -= cost;
+            multiplier += 1;
+            multiplierCount += 1;
+
+            // Создаем эффект улучшения
+            const rect = document.querySelector('.upgrade').getBoundingClientRect();
+            createUpgradeEffect('×2 Множитель!', rect.left + 50, rect.top);
+
             updateUI();
             saveProgress();
-        }, 1000);
+        } else {
+            showError('Недостаточно монет для покупки множителя.');
+        }
+    }
+
+    if (type === 'auto-click') {
+        cost = 100 + (autoClickerCount * 100);
+        if (coins >= cost) {
+            coins -= cost;
+            autoClickerCount += 1;
+
+            // Создаем эффект улучшения
+            const rect = document.querySelector('.upgrade').getBoundingClientRect();
+            createUpgradeEffect('Автоклик!', rect.left + 50, rect.top);
+
+            if (!autoClickerActive) {
+                autoClickerActive = true;
+                setInterval(() => {
+                    score += multiplier;
+                    coins += multiplier;
+                    xp += multiplier;
+                    checkLevelUp();
+                    updateUI();
+                    saveProgress();
+                }, 1000);
+            }
+            updateUI();
+            saveProgress();
+        } else {
+            showError('Недостаточно монет для покупки автокликера.');
+        }
     }
 }
 
@@ -122,7 +189,26 @@ function showLeaderboard() {
                     usernameLink.style.cursor = 'pointer';
                     usernameLink.target = '_blank'; // Открывать ссылку в новой вкладке
 
-                    li.textContent = `${index + 1}. `;
+                    // Добавляем номер места
+                    const placeNumber = document.createElement('span');
+                    placeNumber.textContent = `${index + 1}. `;
+                    li.appendChild(placeNumber);
+
+                    // Добавляем эмодзи для первых трех мест
+                    if (index === 0) {
+                        const goldMedal = document.createElement('span');
+                        goldMedal.textContent = '🥇 ';
+                        li.appendChild(goldMedal);
+                    } else if (index === 1) {
+                        const silverMedal = document.createElement('span');
+                        silverMedal.textContent = '🥈 ';
+                        li.appendChild(silverMedal);
+                    } else if (index === 2) {
+                        const bronzeMedal = document.createElement('span');
+                        bronzeMedal.textContent = '🥉 ';
+                        li.appendChild(bronzeMedal);
+                    }
+
                     li.appendChild(usernameLink);
                     li.appendChild(document.createTextNode(`: ${player.score}`));
                     leaderboardList.appendChild(li);
@@ -247,18 +333,53 @@ function buyUpgrade(type) {
     }
 }
 
-function updateUI() {
-    scoreElement.textContent = score;
-    coinsElement.textContent = coins;
-    levelElement.textContent = level;
-
-    // Обновляем стоимость и количество улучшений
-    document.getElementById('multiplier-cost').textContent = 50 + (multiplierCount * 50);
-    document.getElementById('multiplier-count').textContent = multiplierCount;
-    document.getElementById('auto-click-cost').textContent = 100 + (autoClickerCount * 100);
-    document.getElementById('auto-click-count').textContent = autoClickerCount;
+function formatNumber(number) {
+    if (number >= 1000000) {
+        return (number / 1000000).toFixed(1) + 'M'; // Миллионы
+    } else if (number >= 1000) {
+        return (number / 1000).toFixed(1) + 'K'; // Тысячи
+    } else {
+        return number.toString(); // Меньше 1000
+    }
 }
 
+function updateUI() {
+    scoreElement.textContent = formatNumber(score);
+    coinsElement.textContent = formatNumber(coins);
+    levelElement.textContent = formatNumber(level);
+
+    // Обновляем стоимость и количество улучшений
+    document.getElementById('multiplier-cost').textContent = formatNumber(50 + (multiplierCount * 50));
+    document.getElementById('multiplier-count').textContent = formatNumber(multiplierCount);
+    document.getElementById('auto-click-cost').textContent = formatNumber(100 + (autoClickerCount * 100));
+    document.getElementById('auto-click-count').textContent = formatNumber(autoClickerCount);
+}
+function createTapEffect(x, y) {
+    const effect = document.createElement('div');
+    effect.className = 'tap-effect';
+    effect.style.left = `${x}px`;
+    effect.style.top = `${y}px`;
+    document.body.appendChild(effect);
+    setTimeout(() => effect.remove(), 500);
+}
+
+function createUpgradeEffect(text, x, y) {
+    const effect = document.createElement('div');
+    effect.className = 'upgrade-effect';
+    effect.textContent = text;
+    effect.style.left = `${x}px`;
+    effect.style.top = `${y}px`;
+    document.body.appendChild(effect);
+    setTimeout(() => effect.remove(), 1000);
+}
+
+function createLevelUpEffect() {
+    const effect = document.createElement('div');
+    effect.className = 'level-up-effect';
+    effect.textContent = '🎉 Уровень UP!';
+    document.body.appendChild(effect);
+    setTimeout(() => effect.remove(), 1000);
+}
 function updateImage() {
     const character = getCurrentCharacter();
     const tapImage = document.getElementById('tap-image');
@@ -288,15 +409,16 @@ function checkLevelUp() {
         xp -= neededXP;
         coins += 10;
 
-        const currentCharacter = getCurrentCharacter();
+        // Создаем эффект уровня
+        createLevelUpEffect();
 
+        const currentCharacter = getCurrentCharacter();
         if (previousCharacter !== currentCharacter.name) {
             showNewCharacterPopup(currentCharacter);
             previousCharacter = currentCharacter.name;
         }
 
         updateImage();
-        showLevelUpPopup();
         saveProgress();
     }
 }
@@ -344,12 +466,19 @@ function shareProgress() {
     const userId = user.id;
     const username = user.username || 'unknown';
 
-    const shareText = `Мой счет в Refresher Tapper: ${score}! Попробуй побить! Мой ID: ${userId}, @${username}`;
-    const url = window.location.href;
-    const fullText = `${shareText} ${url}`;
+    // Форматированный текст для шаринга
+    const shareText = `
+🎮 *Мой прогресс в Refresher Tapper*:
+🔥 Счет: *${score}*
+🪙 Монеты: *${coins}*
+📈 Уровень: *${level}*
 
-    copyToClipboard(fullText);
+💪 Попробуй побить мой рекорд!
+👉 Перейди в бота: @bogdan_tapper_bot
+    `.trim(); // Убираем лишние пробелы
+
+    // Копируем текст в буфер обмена
+    copyToClipboard(shareText);
 }
-
 loadProgress();
 updateImage();
