@@ -39,7 +39,7 @@ const config = {
         },
         {
             name: "Глебаста",
-            entryLevel:114,
+            entryLevel: 114,
             image: 'images/glebasta.jpg',
             sound: 'sounds/default.mp3',
         },
@@ -51,7 +51,7 @@ const config = {
         },
         {
             name: "Глебаста",
-            entryLevel:2000,
+            entryLevel: 2000,
             image: 'images/glebasta.jpg',
             sound: 'sounds/default.mp3',
         },
@@ -85,8 +85,8 @@ const shopConfig = {
             id: 'critical-hit',
             name: 'Подик',
             description: 'Шанс нанести мощный удар, который приносит в разы больше очков и монет. Подик — это сила!',
-            baseCost: 200,
-            costIncrease: 100,
+            baseCost: 500,
+            costIncrease: 500,
             effect: 'criticalHit',
             maxLevel: 200,
             icon: '💥',
@@ -95,8 +95,8 @@ const shopConfig = {
             id: 'coin-bonus',
             name: 'База',
             description: 'Увеличивает количество монет за клик. База — это надежный источник дохода!',
-            baseCost: 150,
-            costIncrease: 75,
+            baseCost: 10000,
+            costIncrease: 2500,
             effect: 'coinBonus',
             maxLevel: 200,
             icon: '💰',
@@ -105,8 +105,8 @@ const shopConfig = {
             id: 'xp-boost',
             name: 'Снюс',
             description: 'Увеличивает количество опыта за клик. Снюс заряжает энергией и помогает быстрее расти!',
-            baseCost: 300,
-            costIncrease: 150,
+            baseCost: 25000,
+            costIncrease: 10000,
             effect: 'xpBoost',
             maxLevel: 100,
             icon: '📦',
@@ -132,6 +132,7 @@ tapCircle.addEventListener('click', (event) => {
     xp += multiplier;
     checkLevelUp();
 });
+
 function closeShop() {
     document.getElementById('shop-modal').style.display = 'none';
 }
@@ -169,6 +170,7 @@ function checkLevelUp() {
         saveProgress();
     }
 }
+
 function showPopup(elementId, value) {
     const popup = document.getElementById(elementId);
     popup.textContent = `+${value}`; // Показываем значение
@@ -179,21 +181,25 @@ function showPopup(elementId, value) {
         popup.classList.remove('show');
     }, 1000);
 }
+
 function updateScore(points) {
     score += points;
     scoreElement.textContent = formatNumber(score);
     showPopup('score-popup', points); // Показываем всплывающее сообщение
 }
+
 function updateCoins(coinsAdded) {
     coins += coinsAdded;
     coinsElement.textContent = formatNumber(coins);
     showPopup('coins-popup', coinsAdded); // Показываем всплывающее сообщение
 }
+
 function updateLevel() {
     level++;
     levelElement.textContent = formatNumber(level);
     showPopup('level-popup', 1); // Показываем всплывающее сообщение
 }
+
 function buyUpgrade(upgradeId) {
     const upgrade = shopConfig.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) {
@@ -221,6 +227,7 @@ function buyUpgrade(upgradeId) {
         showError('Недостаточно монет для покупки улучшения.');
     }
 }
+
 function getUpgradeLevel(upgradeId) {
     switch (upgradeId) {
         case 'multiplier':
@@ -237,6 +244,7 @@ function getUpgradeLevel(upgradeId) {
             return 0; // Если улучшение не найдено, возвращаем 0
     }
 }
+
 function increaseUpgradeLevel(upgradeId) {
     // Увеличивает уровень улучшения
     switch (upgradeId) {
@@ -247,16 +255,17 @@ function increaseUpgradeLevel(upgradeId) {
             autoClickerCount += 1;
             break;
         case 'critical-hit':
-            criticalHitCount = (criticalHitCount || 0) + 1;
+            criticalHitCount += 1;
             break;
         case 'coin-bonus':
-            coinBonusCount = (coinBonusCount || 0) + 1;
+            coinBonusCount += 1;
             break;
         case 'xp-boost':
-            xpBoostCount = (xpBoostCount || 0) + 1;
+            xpBoostCount += 1;
             break;
     }
 }
+
 function applyUpgradeEffect(effectType) {
     switch (effectType) {
         case 'multiplier':
@@ -278,10 +287,12 @@ function applyUpgradeEffect(effectType) {
             console.error('Неизвестный тип улучшения:', effectType);
     }
 }
+
 function applyMultiplierEffect() {
     multiplier += 1; // Увеличиваем множитель на 1
     console.log(`Множитель увеличен! Текущий множитель: ${multiplier}`);
 }
+
 function applyAutoClickerEffect() {
     if (!autoClickerActive) {
         autoClickerActive = true; // Активируем автокликер
@@ -303,6 +314,7 @@ function applyAutoClickerEffect() {
         console.log('Автокликер активирован!');
     }
 }
+
 function applyCriticalHitEffect() {
     // Увеличиваем шанс критического удара
     const criticalHitChance = 0.1 + (criticalHitCount * 0.05); // Базовый шанс 10% + 5% за каждый уровень
@@ -344,6 +356,7 @@ function applyCriticalHitEffect() {
 
     console.log(`Критический удар улучшен! Шанс: ${criticalHitChance * 100}%, Множитель: x${criticalHitMultiplier}`);
 }
+
 function applyCoinBonusEffect() {
     const coinBonusMultiplier = 1 + (coinBonusCount * 0.2); // +20% монет за каждый уровень
 
@@ -371,6 +384,7 @@ function applyCoinBonusEffect() {
 
     console.log(`Бонус монет улучшен! Множитель монет: x${coinBonusMultiplier}`);
 }
+
 function applyXpBoostEffect() {
     const xpBoostMultiplier = 1 + (xpBoostCount * 0.3); // +30% опыта за каждый уровень
 
@@ -398,6 +412,7 @@ function applyXpBoostEffect() {
 
     console.log(`Ускорение опыта улучшено! Множитель опыта: x${xpBoostMultiplier}`);
 }
+
 function createCriticalHitEffect(x, y) {
     const effect = document.createElement('div');
     effect.className = 'critical-hit-effect';
@@ -407,6 +422,7 @@ function createCriticalHitEffect(x, y) {
     document.body.appendChild(effect);
     setTimeout(() => effect.remove(), 1000);
 }
+
 function renderShop() {
     const upgradesList = document.getElementById('upgrades-list');
     upgradesList.innerHTML = '';
@@ -437,10 +453,12 @@ function renderShop() {
         upgradesList.appendChild(upgradeElement);
     });
 }
+
 function openShop() {
     renderShop(); // Отрисовываем улучшения
     document.getElementById('shop-modal').style.display = 'block'; // Показываем модальное окно
 }
+
 function showLeaderboard() {
     fetch('/api/leaderboard')
         .then(response => response.json())
@@ -516,7 +534,19 @@ window.onclick = (event) => {
 function saveProgress() {
     const userId = Telegram.WebApp.initDataUnsafe.user?.id || 1;
     const username = Telegram.WebApp.initDataUnsafe.user?.username || 'unknown'; // Получаем username
-    const gameData = { score, coins, level, xp, multiplier, username, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount }; // Добавляем username в данные
+    const gameData = {
+        score,
+        coins,
+        level,
+        xp,
+        multiplier,
+        username,
+        multiplierCount,
+        autoClickerCount,
+        criticalHitCount,
+        coinBonusCount,
+        xpBoostCount
+    }; // Добавляем username в данные
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
 
@@ -525,7 +555,7 @@ function saveProgress() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId, ...gameData }), // Отправляем username на сервер
+        body: JSON.stringify({userId, ...gameData}), // Отправляем username на сервер
     }).catch(error => console.error('Ошибка сохранения:', error));
 }
 
@@ -603,6 +633,7 @@ function updateUI() {
         }
     });
 }
+
 function createTapEffect(x, y) {
     const effect = document.createElement('div');
     effect.className = 'tap-effect';
@@ -629,6 +660,7 @@ function createLevelUpEffect() {
     document.body.appendChild(effect);
     setTimeout(() => effect.remove(), 1000);
 }
+
 function updateImage() {
     const character = getCurrentCharacter(); // Получаем текущего персонажа
     const tapImage = document.getElementById('tap-image');
@@ -663,6 +695,7 @@ function getCharacterForLevel(currentLevel) {
     }
     return unlockedCharacter;
 }
+
 function showLevelUpPopup() {
     const popup = document.createElement('div');
     popup.className = 'level-up-popup';
@@ -773,9 +806,6 @@ function openCharacterModal() {
 }
 
 
-
-
-
 // Закрытие модального окна
 function closeCharacterModal() {
     document.getElementById('character-modal').style.display = 'none';
@@ -788,5 +818,6 @@ function selectCharacter(character) {
     closeCharacterModal(); // Закрываем модальное окно
     saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
 }
+
 loadProgress();
 updateImage();

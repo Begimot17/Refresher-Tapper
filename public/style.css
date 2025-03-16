@@ -80,7 +80,7 @@ h1 {
 
 /* Эффекты при нажатии */
 #tap-circle:active {
-    transform: scale(0.95); /* Уменьшаем кружок */шаем кружок */
+    transform: scale(0.95);
     transition: transform 0.1s ease;
 }
 
@@ -108,7 +108,7 @@ h1 {
     gap: 20px;
 }
 
-.button-row  .btn {
+.button-row .btn {
     width: 200px; /* Фиксированная ширина кнопок */
     height: 50px; /* Фиксированная высота кнопок */
     display: flex;
@@ -119,6 +119,7 @@ h1 {
     padding: 10px; /* Внутренний отступ */
     box-sizing: border-box; /* Учитываем padding в общей ширине */
 }
+
 /* Стили для кнопок */
 .btn {
     background: linear-gradient(135deg, #3498db, #2980b9); /* Градиентный фон */
@@ -330,6 +331,7 @@ h1 {
         font-size: 14px;
     }
 }
+
 /* Стили для модального окна выбора персонажа */
 #shop-modal .modal-content, #character-modal .modal-content {
     background: #34495e;
@@ -401,6 +403,7 @@ h1 {
 .upgrades-list::-webkit-scrollbar-thumb:hover, .character-list::-webkit-scrollbar-thumb:hover {
     background: #2980b9; /* Цвет ползунка при наведении */
 }
+
 .upgrade-item {
     display: flex;
     flex-direction: column;
