@@ -6,6 +6,7 @@ let multiplier = 1;
 let autoClickerActive = false;
 let multiplierCount = 0;
 let autoClickerCount = 0;
+let selectedCharacter = null;
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
@@ -37,6 +38,12 @@ const config = {
             name: "Глебаста",
             entryLevel:114,
             image: 'images/glebasta.jpg',
+            sound: 'sounds/default.mp3',
+        },
+        {
+            name: "Любомир",
+            entryLevel: 146,
+            image: 'images/lubomir.jpg',
             sound: 'sounds/default.mp3',
         },
         {
@@ -78,27 +85,34 @@ function closeShop() {
 }
 
 function getCurrentCharacter() {
-    return config.characters
-        .filter(character => level >= character.entryLevel)
-        .reduce((prev, curr) => (curr.entryLevel > prev.entryLevel ? curr : prev), config.characters[0]);
+    if (selectedCharacter) {
+        return selectedCharacter;
+    }
+    return getCharacterForLevel(level);
 }
 
 function checkLevelUp() {
     const neededXP = level * 100;
     if (xp >= neededXP) {
-        level++;
+        level++; // Увеличиваем уровень
         xp -= neededXP;
-        updateLevel(); // Используем новую функцию
         coins += 10;
-        updateCoins(10); // Используем новую функцию
 
-        const currentCharacter = getCurrentCharacter();
-        if (previousCharacter !== currentCharacter.name) {
-            showNewCharacterPopup(currentCharacter);
-            previousCharacter = currentCharacter.name;
+        // Обновляем интерфейс
+        updateUI(); // Добавлено здесь
+
+        // Создаем эффект уровня
+        createLevelUpEffect();
+
+        // Проверяем, разблокирован ли новый персонаж
+        const newCharacter = getCharacterForLevel(level);
+        if (newCharacter && (!selectedCharacter || newCharacter.entryLevel > selectedCharacter.entryLevel)) {
+            console.log(`Новый персонаж разблокирован: ${newCharacter.name}`);
+            showNewCharacterPopup(newCharacter);
+            selectedCharacter = newCharacter; // Автоматически выбираем нового персонажа
+            updateImage(); // Меняем изображение
         }
 
-        updateImage();
         saveProgress();
     }
 }
@@ -393,7 +407,7 @@ function createLevelUpEffect() {
     setTimeout(() => effect.remove(), 1000);
 }
 function updateImage() {
-    const character = getCurrentCharacter();
+    const character = getCurrentCharacter(); // Получаем текущего персонажа
     const tapImage = document.getElementById('tap-image');
     const tapSound = document.getElementById('tap-sound');
 
@@ -420,27 +434,17 @@ function showNewCharacterPopup(character) {
 
 let previousCharacter = null;
 
-function checkLevelUp() {
-    const neededXP = level * 100;
-    if (xp >= neededXP) {
-        level++;
-        xp -= neededXP;
-        coins += 10;
-
-        // Создаем эффект уровня
-        createLevelUpEffect();
-
-        const currentCharacter = getCurrentCharacter();
-        if (previousCharacter !== currentCharacter.name) {
-            showNewCharacterPopup(currentCharacter);
-            previousCharacter = currentCharacter.name;
+function getCharacterForLevel(currentLevel) {
+    let unlockedCharacter = null;
+    for (const character of config.characters) {
+        if (currentLevel >= character.entryLevel) {
+            unlockedCharacter = character;
+        } else {
+            break; // Прерываем цикл, так как персонажи отсортированы по уровню
         }
-
-        updateImage();
-        saveProgress();
     }
+    return unlockedCharacter;
 }
-
 function showLevelUpPopup() {
     const popup = document.createElement('div');
     popup.className = 'level-up-popup';
@@ -561,13 +565,9 @@ function closeCharacterModal() {
 
 // Выбор персонажа
 function selectCharacter(character) {
-    const tapImage = document.getElementById('tap-image');
-    const tapSound = document.getElementById('tap-sound');
-
-    tapImage.src = character.image;
-    tapSound.src = character.sound;
-
-    closeCharacterModal();
+    selectedCharacter = character; // Устанавливаем выбранного персонажа
+    updateImage(); // Обновляем изображение
+    closeCharacterModal(); // Закрываем модальное окно
 }
 loadProgress();
 updateImage();
