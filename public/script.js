@@ -42,7 +42,7 @@ const config = {
         },
         {
             name: "Любомир",
-            entryLevel: 146,
+            entryLevel: 161,
             image: 'images/lubomir.jpg',
             sound: 'sounds/default.mp3',
         },
@@ -94,11 +94,11 @@ function getCurrentCharacter() {
 function checkLevelUp() {
     const neededXP = level * 100;
     if (xp >= neededXP) {
-        level++; // Увеличиваем уровень
+        updateLevel()
         xp -= neededXP;
         coins += 10;
 
-        // Обновляем интерфейс
+        showLevelUpPopup()
         updateUI(); // Добавлено здесь
 
         // Создаем эффект уровня
@@ -111,6 +111,7 @@ function checkLevelUp() {
             showNewCharacterPopup(newCharacter);
             selectedCharacter = newCharacter; // Автоматически выбираем нового персонажа
             updateImage(); // Меняем изображение
+            saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
         }
 
         saveProgress();
@@ -315,7 +316,6 @@ function loadProgress() {
             .catch(error => console.error('Ошибка загрузки с сервера:', error));
     }
 
-    // Устанавливаем персонажа по умолчанию
     updateImage();
 }
 
@@ -412,11 +412,7 @@ function updateImage() {
     const tapSound = document.getElementById('tap-sound');
 
     // Плавное изменение изображения
-    tapImage.style.opacity = 0; // Сначала скрываем изображение
-    setTimeout(() => {
-        tapImage.src = character.image; // Меняем изображение
-        tapImage.style.opacity = 1; // Плавно показываем новое изображение
-    }, 200); // Задержка для плавного перехода
+    tapImage.src = character.image
 
     tapSound.src = character.sound;
 }
@@ -429,7 +425,6 @@ function showNewCharacterPopup(character) {
         <p>Теперь вы играете за ${character.name}!</p>
     `;
     document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 3000);
 }
 
 let previousCharacter = null;
@@ -568,6 +563,7 @@ function selectCharacter(character) {
     selectedCharacter = character; // Устанавливаем выбранного персонажа
     updateImage(); // Обновляем изображение
     closeCharacterModal(); // Закрываем модальное окно
+    saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
 }
 loadProgress();
 updateImage();
