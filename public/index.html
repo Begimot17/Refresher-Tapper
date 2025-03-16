@@ -42,30 +42,9 @@
 
 <div id="shop-modal" class="modal">
     <div class="modal-content">
+        <span class="close" onclick="closeShop()">&times;</span>
         <h2>🛒 Магазин улучшений</h2>
-        <div class="upgrade" onclick="buyUpgrade('multiplier')">
-            <div class="upgrade-header">
-                🚀 +1 Множитель
-                <button class="btn buy-btn">Купить</button>
-            </div>
-            <div class="upgrade-details">
-                Цена: <span id="multiplier-cost">50</span> 🪙
-                <br>
-                Куплено: <span id="multiplier-count">0</span>
-            </div>
-        </div>
-        <div class="upgrade" onclick="buyUpgrade('auto-click')">
-            <div class="upgrade-header">
-                🤖 Автоклик
-                <button class="btn buy-btn">Купить</button>
-            </div>
-            <div class="upgrade-details">
-                Цена: <span id="auto-click-cost">100</span> 🪙
-                <br>
-                Куплено: <span id="auto-click-count">0</span>
-            </div>
-        </div>
-        <button class="btn close" onclick="closeShop()">Закрыть</button>
+        <div id="upgrades-list" class="upgrades-list"></div>
     </div>
 </div>
 <div id="character-modal" class="modal">

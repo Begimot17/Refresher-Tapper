@@ -331,7 +331,7 @@ h1 {
     }
 }
 /* Стили для модального окна выбора персонажа */
-#character-modal .modal-content {
+#shop-modal .modal-content, #character-modal .modal-content {
     background: #34495e;
     margin: 10% auto;
     padding: 20px;
@@ -345,7 +345,7 @@ h1 {
 }
 
 /* Стили для списка персонажей */
-.character-list {
+.upgrades-list, .character-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -355,7 +355,7 @@ h1 {
 }
 
 /* Стили для элемента персонажа */
-.character-item {
+.upgrade-item, .character-item {
     background: #2c3e50;
     padding: 15px;
     border-radius: 10px;
@@ -366,49 +366,49 @@ h1 {
     gap: 10px;
 }
 
-.character-item:hover {
+.upgrade-item:hover, .character-item:hover {
     transform: scale(1.02);
     box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
 }
 
-.character-item img {
+.upgrade-item img, .character-item img {
     width: 50px;
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.character-item span {
+.upgrade-item span, .character-item span {
     font-size: 18px;
     font-weight: bold;
 }
 
 /* Стили для скролла */
-.character-list::-webkit-scrollbar {
+.upgrades-list::-webkit-scrollbar, .character-list::-webkit-scrollbar {
     width: 8px; /* Ширина скролла */
 }
 
-.character-list::-webkit-scrollbar-track {
+.upgrades-list::-webkit-scrollbar-track, .character-list::-webkit-scrollbar-track {
     background: #2c3e50; /* Цвет трека */
     border-radius: 4px;
 }
 
-.character-list::-webkit-scrollbar-thumb {
+.upgrades-list::-webkit-scrollbar-thumb, .character-list::-webkit-scrollbar-thumb {
     background: #3498db; /* Цвет ползунка */
     border-radius: 4px;
 }
 
-.character-list::-webkit-scrollbar-thumb:hover {
+.upgrades-list::-webkit-scrollbar-thumb:hover, .character-list::-webkit-scrollbar-thumb:hover {
     background: #2980b9; /* Цвет ползунка при наведении */
 }
-.character-item {
+.upgrade-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 10px;
 }
 
-.character-item img, .locked-character {
+.upgrade-item img, .character-item img, .locked-character {
     width: 50px;
     height: 50px;
     border-radius: 50%;

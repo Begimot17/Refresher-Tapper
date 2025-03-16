@@ -6,6 +6,9 @@ let multiplier = 1;
 let autoClickerActive = false;
 let multiplierCount = 0;
 let autoClickerCount = 0;
+let criticalHitCount = 0; // Уровень улучшения "Критический удар"
+let coinBonusCount = 0;   // Уровень улучшения "Бонус монет"
+let xpBoostCount = 0;
 let selectedCharacter = null;
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
@@ -56,6 +59,60 @@ const config = {
     defaultImage: 'images/bogdan.jpg',
     defaultSound: 'sounds/bogdan.m4a',
 };
+const shopConfig = {
+    upgrades: [
+        {
+            id: 'multiplier',
+            name: 'Самогон',
+            description: 'Увеличивает эффективность вашего клика. Чем больше самогона, тем больше очков и монет!',
+            baseCost: 50,
+            costIncrease: 50,
+            effect: 'multiplier',
+            maxLevel: 500,
+            icon: '🍺',
+        },
+        {
+            id: 'auto-click',
+            name: 'Волга',
+            description: 'Автоматически кликает за вас. Волга работает без устали, пока вы отдыхаете!',
+            baseCost: 100,
+            costIncrease: 100,
+            effect: 'autoClicker',
+            maxLevel: 500,
+            icon: '🏎️',
+        },
+        {
+            id: 'critical-hit',
+            name: 'Подик',
+            description: 'Шанс нанести мощный удар, который приносит в разы больше очков и монет. Подик — это сила!',
+            baseCost: 200,
+            costIncrease: 100,
+            effect: 'criticalHit',
+            maxLevel: 200,
+            icon: '💥',
+        },
+        {
+            id: 'coin-bonus',
+            name: 'База',
+            description: 'Увеличивает количество монет за клик. База — это надежный источник дохода!',
+            baseCost: 150,
+            costIncrease: 75,
+            effect: 'coinBonus',
+            maxLevel: 200,
+            icon: '💰',
+        },
+        {
+            id: 'xp-boost',
+            name: 'Снюс',
+            description: 'Увеличивает количество опыта за клик. Снюс заряжает энергией и помогает быстрее расти!',
+            baseCost: 300,
+            costIncrease: 150,
+            effect: 'xpBoost',
+            maxLevel: 100,
+            icon: '📦',
+        },
+    ],
+};
 const tapSound = document.getElementById('tap-sound');
 
 tapCircle.addEventListener('click', (event) => {
@@ -74,12 +131,7 @@ tapCircle.addEventListener('click', (event) => {
     updateCoins(multiplier); // Используем новую функцию
     xp += multiplier;
     checkLevelUp();
-    saveProgress();
 });
-function openShop() {
-    document.getElementById('shop-modal').style.display = 'block';
-}
-
 function closeShop() {
     document.getElementById('shop-modal').style.display = 'none';
 }
@@ -142,55 +194,253 @@ function updateLevel() {
     levelElement.textContent = formatNumber(level);
     showPopup('level-popup', 1); // Показываем всплывающее сообщение
 }
-function buyUpgrade(type) {
-    let cost;
-
-    if (type === 'multiplier') {
-        cost = 50 + (multiplierCount * 50);
-        if (coins >= cost) {
-            coins -= cost;
-            multiplier += 1;
-            multiplierCount += 1;
-
-            // Создаем эффект улучшения
-            const rect = document.querySelector('.upgrade').getBoundingClientRect();
-            createUpgradeEffect('×2 Множитель!', rect.left + 50, rect.top);
-
-            updateUI();
-            saveProgress();
-        } else {
-            showError('Недостаточно монет для покупки множителя.');
-        }
+function buyUpgrade(upgradeId) {
+    const upgrade = shopConfig.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade) {
+        showError('Улучшение не найдено.');
+        return;
     }
 
-    if (type === 'auto-click') {
-        cost = 100 + (autoClickerCount * 100);
-        if (coins >= cost) {
-            coins -= cost;
-            autoClickerCount += 1;
+    const currentLevel = getUpgradeLevel(upgradeId); // Получаем текущий уровень улучшения
+    const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
 
-            // Создаем эффект улучшения
-            const rect = document.querySelector('.upgrade').getBoundingClientRect();
-            createUpgradeEffect('Автоклик!', rect.left + 50, rect.top);
+    if (coins >= cost) {
+        coins -= cost;
+        increaseUpgradeLevel(upgradeId); // Увеличиваем уровень улучшения
 
-            if (!autoClickerActive) {
-                autoClickerActive = true;
-                setInterval(() => {
-                    score += multiplier;
-                    coins += multiplier;
-                    xp += multiplier;
-                    checkLevelUp();
-                    updateUI();
-                    saveProgress();
-                }, 1000);
-            }
-            updateUI();
-        } else {
-            showError('Недостаточно монет для покупки автокликера.');
-        }
+        // Применяем эффект улучшения
+        applyUpgradeEffect(upgrade.effect);
+
+        // Создаем эффект улучшения
+        const rect = document.querySelector(`.upgrade[data-id="${upgradeId}"]`).getBoundingClientRect();
+        createUpgradeEffect(`${upgrade.icon} ${upgrade.name} улучшен!`, rect.left + 50, rect.top);
+
+        updateUI();
+        saveProgress();
+    } else {
+        showError('Недостаточно монет для покупки улучшения.');
     }
 }
+function getUpgradeLevel(upgradeId) {
+    switch (upgradeId) {
+        case 'multiplier':
+            return multiplierCount || 0; // Возвращаем количество купленных множителей
+        case 'auto-click':
+            return autoClickerCount || 0; // Возвращаем количество купленных автокликеров
+        case 'critical-hit':
+            return criticalHitCount || 0; // Возвращаем уровень критического удара
+        case 'coin-bonus':
+            return coinBonusCount || 0; // Возвращаем уровень бонуса монет
+        case 'xp-boost':
+            return xpBoostCount || 0; // Возвращаем уровень ускорения опыта
+        default:
+            return 0; // Если улучшение не найдено, возвращаем 0
+    }
+}
+function increaseUpgradeLevel(upgradeId) {
+    // Увеличивает уровень улучшения
+    switch (upgradeId) {
+        case 'multiplier':
+            multiplierCount += 1;
+            break;
+        case 'auto-click':
+            autoClickerCount += 1;
+            break;
+        case 'critical-hit':
+            criticalHitCount = (criticalHitCount || 0) + 1;
+            break;
+        case 'coin-bonus':
+            coinBonusCount = (coinBonusCount || 0) + 1;
+            break;
+        case 'xp-boost':
+            xpBoostCount = (xpBoostCount || 0) + 1;
+            break;
+    }
+}
+function applyUpgradeEffect(effectType) {
+    switch (effectType) {
+        case 'multiplier':
+            applyMultiplierEffect();
+            break;
+        case 'autoClicker':
+            applyAutoClickerEffect();
+            break;
+        case 'criticalHit':
+            applyCriticalHitEffect();
+            break;
+        case 'coinBonus':
+            applyCoinBonusEffect();
+            break;
+        case 'xpBoost':
+            applyXpBoostEffect();
+            break;
+        default:
+            console.error('Неизвестный тип улучшения:', effectType);
+    }
+}
+function applyMultiplierEffect() {
+    multiplier += 1; // Увеличиваем множитель на 1
+    console.log(`Множитель увеличен! Текущий множитель: ${multiplier}`);
+}
+function applyAutoClickerEffect() {
+    if (!autoClickerActive) {
+        autoClickerActive = true; // Активируем автокликер
+        setInterval(() => {
+            // Автоматически добавляем очки, монеты и опыт
+            score += multiplier;
+            coins += multiplier;
+            xp += multiplier;
 
+            // Проверяем, достигнут ли новый уровень
+            checkLevelUp();
+
+            // Обновляем интерфейс
+            updateUI();
+
+            // Сохраняем прогресс
+            saveProgress();
+        }, 1000); // Интервал в 1 секунду
+        console.log('Автокликер активирован!');
+    }
+}
+function applyCriticalHitEffect() {
+    // Увеличиваем шанс критического удара
+    const criticalHitChance = 0.1 + (criticalHitCount * 0.05); // Базовый шанс 10% + 5% за каждый уровень
+    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5); // Базовый множитель x2 + 0.5 за каждый уровень
+
+    // Переопределяем функцию обработки клика
+    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
+    tapCircle.addEventListener('click', handleTap); // Добавляем новый
+
+    function handleTap(event) {
+        tapSound.currentTime = 0;
+        tapSound.play();
+
+        // Создаем эффект клика
+        createTapEffect(event.clientX, event.clientY);
+
+        // Проверяем, сработал ли критический удар
+        if (Math.random() < criticalHitChance) {
+            const criticalScore = multiplier * criticalHitMultiplier;
+            const criticalCoins = multiplier * criticalHitMultiplier;
+            const criticalXp = multiplier * criticalHitMultiplier;
+
+            // Добавляем очки, монеты и опыт с учетом критического удара
+            updateScore(criticalScore);
+            updateCoins(criticalCoins);
+            xp += criticalXp;
+
+            // Показываем эффект критического удара
+            createCriticalHitEffect(event.clientX, event.clientY);
+        } else {
+            // Обычный клик
+            updateScore(multiplier);
+            updateCoins(multiplier);
+            xp += multiplier;
+        }
+
+        checkLevelUp();
+    }
+
+    console.log(`Критический удар улучшен! Шанс: ${criticalHitChance * 100}%, Множитель: x${criticalHitMultiplier}`);
+}
+function applyCoinBonusEffect() {
+    const coinBonusMultiplier = 1 + (coinBonusCount * 0.2); // +20% монет за каждый уровень
+
+    // Переопределяем функцию обработки клика
+    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
+    tapCircle.addEventListener('click', handleTap); // Добавляем новый
+
+    function handleTap(event) {
+        tapSound.currentTime = 0;
+        tapSound.play();
+
+        // Создаем эффект клика
+        createTapEffect(event.clientX, event.clientY);
+
+        // Добавляем очки и опыт
+        updateScore(multiplier);
+        xp += multiplier;
+
+        // Добавляем монеты с учетом бонуса
+        const coinsEarned = multiplier * coinBonusMultiplier;
+        updateCoins(coinsEarned);
+
+        checkLevelUp();
+    }
+
+    console.log(`Бонус монет улучшен! Множитель монет: x${coinBonusMultiplier}`);
+}
+function applyXpBoostEffect() {
+    const xpBoostMultiplier = 1 + (xpBoostCount * 0.3); // +30% опыта за каждый уровень
+
+    // Переопределяем функцию обработки клика
+    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
+    tapCircle.addEventListener('click', handleTap); // Добавляем новый
+
+    function handleTap(event) {
+        tapSound.currentTime = 0;
+        tapSound.play();
+
+        // Создаем эффект клика
+        createTapEffect(event.clientX, event.clientY);
+
+        // Добавляем очки и монеты
+        updateScore(multiplier);
+        updateCoins(multiplier);
+
+        // Добавляем опыт с учетом ускорения
+        const xpEarned = multiplier * xpBoostMultiplier;
+        xp += xpEarned;
+
+        checkLevelUp();
+    }
+
+    console.log(`Ускорение опыта улучшено! Множитель опыта: x${xpBoostMultiplier}`);
+}
+function createCriticalHitEffect(x, y) {
+    const effect = document.createElement('div');
+    effect.className = 'critical-hit-effect';
+    effect.textContent = '💥 Критический удар!';
+    effect.style.left = `${x}px`;
+    effect.style.top = `${y}px`;
+    document.body.appendChild(effect);
+    setTimeout(() => effect.remove(), 1000);
+}
+function renderShop() {
+    const upgradesList = document.getElementById('upgrades-list');
+    upgradesList.innerHTML = '';
+
+    shopConfig.upgrades.forEach(upgrade => {
+        const upgradeElement = document.createElement('div');
+        upgradeElement.className = 'upgrade';
+        upgradeElement.setAttribute('data-id', upgrade.id);
+        upgradeElement.onclick = () => buyUpgrade(upgrade.id);
+
+        const currentLevel = getUpgradeLevel(upgrade.id);
+        const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
+
+        upgradeElement.innerHTML = `
+            <div class="upgrade-header">
+                ${upgrade.icon} ${upgrade.name}
+                <button class="btn buy-btn">Купить</button>
+            </div>
+            <div class="upgrade-details">
+                Цена: <span class="upgrade-cost">${formatNumber(cost)}</span> 🪙
+                <br>
+                Уровень: <span class="upgrade-level">${currentLevel}</span> / ${upgrade.maxLevel}
+                <br>
+                <small>${upgrade.description}</small>
+            </div>
+        `;
+
+        upgradesList.appendChild(upgradeElement);
+    });
+}
+function openShop() {
+    renderShop(); // Отрисовываем улучшения
+    document.getElementById('shop-modal').style.display = 'block'; // Показываем модальное окно
+}
 function showLeaderboard() {
     fetch('/api/leaderboard')
         .then(response => response.json())
@@ -234,7 +484,7 @@ function showLeaderboard() {
                     }
 
                     li.appendChild(usernameLink);
-                    li.appendChild(document.createTextNode(`: ${player.score}`));
+                    li.appendChild(document.createTextNode(`: ${formatNumber(player.score)}`));
                     leaderboardList.appendChild(li);
                 });
             }
@@ -266,7 +516,7 @@ window.onclick = (event) => {
 function saveProgress() {
     const userId = Telegram.WebApp.initDataUnsafe.user?.id || 1;
     const username = Telegram.WebApp.initDataUnsafe.user?.username || 'unknown'; // Получаем username
-    const gameData = { score, coins, level, xp, multiplier, username, multiplierCount, autoClickerCount }; // Добавляем username в данные
+    const gameData = { score, coins, level, xp, multiplier, username, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount }; // Добавляем username в данные
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
 
@@ -291,6 +541,9 @@ function loadProgress() {
             multiplier = data.multiplier || 1;
             multiplierCount = data.multiplierCount || 0;
             autoClickerCount = data.autoClickerCount || 0;
+            criticalHitCount = data.criticalHitCount || 0;
+            coinBonusCount = data.coinBonusCount || 0;
+            xpBoostCount = data.xpBoostCount || 0;
             updateUI();
         } catch (e) {
             console.error('Ошибка загрузки из localStorage:', e);
@@ -310,6 +563,9 @@ function loadProgress() {
                     multiplier = data.multiplier || multiplier;
                     multiplierCount = data.multiplierCount || multiplierCount;
                     autoClickerCount = data.autoClickerCount || autoClickerCount;
+                    criticalHitCount = data.criticalHitCount || criticalHitCount;
+                    coinBonusCount = data.coinBonusCount || coinBonusCount;
+                    xpBoostCount = data.xpBoostCount || xpBoostCount;
                     updateUI();
                 }
             })
@@ -319,51 +575,12 @@ function loadProgress() {
     updateImage();
 }
 
-function buyUpgrade(type) {
-    let cost;
-
-    if (type === 'multiplier') {
-        cost = 50 + (multiplierCount * 50); // Базовая стоимость + 50 за каждый уровень
-        if (coins >= cost) {
-            coins -= cost;
-            multiplier += 1;
-            multiplierCount += 1;
-            updateUI();
-            saveProgress();
-        } else {
-            showError('Недостаточно монет для покупки множителя.');
-        }
-    }
-
-    if (type === 'auto-click') {
-        cost = 100 + (autoClickerCount * 100); // Базовая стоимость + 100 за каждый уровень
-        if (coins >= cost) {
-            coins -= cost;
-            autoClickerCount += 1;
-            if (!autoClickerActive) {
-                autoClickerActive = true;
-                setInterval(() => {
-                    score += multiplier;
-                    coins += multiplier;
-                    xp += multiplier;
-                    checkLevelUp();
-                    updateUI();
-                    saveProgress();
-                }, 1000);
-            }
-            updateUI();
-            saveProgress();
-        } else {
-            showError('Недостаточно монет для покупки автокликера.');
-        }
-    }
-}
 
 function formatNumber(number) {
     if (number >= 1000000) {
-        return (number / 1000000).toFixed(1) + 'M'; // Миллионы
+        return (number / 1000000).toFixed(2) + 'M'; // Миллионы
     } else if (number >= 1000) {
-        return (number / 1000).toFixed(1) + 'K'; // Тысячи
+        return (number / 1000).toFixed(2) + 'K'; // Тысячи
     } else {
         return number.toString(); // Меньше 1000
     }
@@ -375,10 +592,16 @@ function updateUI() {
     levelElement.textContent = formatNumber(level);
 
     // Обновляем стоимость и количество улучшений
-    document.getElementById('multiplier-cost').textContent = formatNumber(50 + (multiplierCount * 50));
-    document.getElementById('multiplier-count').textContent = formatNumber(multiplierCount);
-    document.getElementById('auto-click-cost').textContent = formatNumber(100 + (autoClickerCount * 100));
-    document.getElementById('auto-click-count').textContent = formatNumber(autoClickerCount);
+    shopConfig.upgrades.forEach(upgrade => {
+        const currentLevel = getUpgradeLevel(upgrade.id);
+        const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
+
+        const upgradeElement = document.querySelector(`.upgrade[data-id="${upgrade.id}"]`);
+        if (upgradeElement) {
+            upgradeElement.querySelector('.upgrade-cost').textContent = formatNumber(cost);
+            upgradeElement.querySelector('.upgrade-level').textContent = currentLevel;
+        }
+    });
 }
 function createTapEffect(x, y) {
     const effect = document.createElement('div');
