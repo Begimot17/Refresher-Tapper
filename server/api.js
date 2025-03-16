@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema({
     score: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
+    multiplierCount: { type: Number, default: 0 }, // Количество купленных множителей
+    autoClickerCount: { type: Number, default: 0 }, // Количество купленных автокликеров
 });
 
 const User = mongoose.model('User', userSchema);
@@ -41,12 +43,12 @@ app.use((req, res, next) => {
 });
 
 app.post('/api/save', async (req, res) => {
-    const { userId, username, score, coins, level } = req.body;
+    const { userId, username, score, coins, level, multiplierCount, autoClickerCount } = req.body;
 
     try {
         const user = await User.findOneAndUpdate(
             { userId },
-            { username, score, coins, level },
+            { username, score, coins, level, multiplierCount, autoClickerCount },
             { upsert: true, new: true }
         );
         res.status(200).json({ message: 'Данные сохранены', user });

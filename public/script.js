@@ -4,8 +4,8 @@ let level = 1;
 let xp = 0;
 let multiplier = 1;
 let autoClickerActive = false;
-let multiplierCount = 0; // Количество купленных множителей
-let autoClickerCount = 0; // Количество купленных автокликеров
+let multiplierCount = 0;
+let autoClickerCount = 0;
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
@@ -160,7 +160,6 @@ function buyUpgrade(type) {
                 }, 1000);
             }
             updateUI();
-            saveProgress();
         } else {
             showError('Недостаточно монет для покупки автокликера.');
         }
@@ -242,7 +241,7 @@ window.onclick = (event) => {
 function saveProgress() {
     const userId = Telegram.WebApp.initDataUnsafe.user?.id || 1;
     const username = Telegram.WebApp.initDataUnsafe.user?.username || 'unknown'; // Получаем username
-    const gameData = { score, coins, level, xp, multiplier, username }; // Добавляем username в данные
+    const gameData = { score, coins, level, xp, multiplier, username, multiplierCount, autoClickerCount }; // Добавляем username в данные
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
 
