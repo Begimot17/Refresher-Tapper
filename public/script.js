@@ -290,6 +290,9 @@ function loadProgress() {
             })
             .catch(error => console.error('Ошибка загрузки с сервера:', error));
     }
+
+    // Устанавливаем персонажа по умолчанию
+    updateImage();
 }
 
 function buyUpgrade(type) {
@@ -384,7 +387,13 @@ function updateImage() {
     const tapImage = document.getElementById('tap-image');
     const tapSound = document.getElementById('tap-sound');
 
-    tapImage.src = character.image;
+    // Плавное изменение изображения
+    tapImage.style.opacity = 0; // Сначала скрываем изображение
+    setTimeout(() => {
+        tapImage.src = character.image; // Меняем изображение
+        tapImage.style.opacity = 1; // Плавно показываем новое изображение
+    }, 200); // Задержка для плавного перехода
+
     tapSound.src = character.sound;
 }
 
@@ -478,6 +487,47 @@ function shareProgress() {
 
     // Копируем текст в буфер обмена
     copyToClipboard(shareText);
+}
+
+// Открытие модального окна для выбора персонажа
+function openCharacterModal() {
+    const characterList = document.getElementById('character-list');
+    characterList.innerHTML = '';
+
+    // Фильтруем персонажей, доступных на текущем уровне
+    const availableCharacters = config.characters.filter(character =>
+        character.levels.some(lvl => lvl <= level)
+    );
+
+    // Добавляем персонажей в список
+    availableCharacters.forEach(character => {
+        const characterItem = document.createElement('div');
+        characterItem.className = 'character-item';
+        characterItem.innerHTML = `
+            <img src="${character.image}" alt="${character.name}">
+            <span>${character.name}</span>
+        `;
+        characterItem.onclick = () => selectCharacter(character);
+        characterList.appendChild(characterItem);
+    });
+
+    document.getElementById('character-modal').style.display = 'block';
+}
+
+// Закрытие модального окна
+function closeCharacterModal() {
+    document.getElementById('character-modal').style.display = 'none';
+}
+
+// Выбор персонажа
+function selectCharacter(character) {
+    const tapImage = document.getElementById('tap-image');
+    const tapSound = document.getElementById('tap-sound');
+
+    tapImage.src = character.image;
+    tapSound.src = character.sound;
+
+    closeCharacterModal();
 }
 loadProgress();
 updateImage();

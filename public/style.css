@@ -60,9 +60,21 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавные переходы */
+    transition: transform 0.2s ease, box-shadow 0.3s ease; /* Плавные переходы */
     -webkit-tap-highlight-color: transparent;
     animation: glow 2s infinite alternate; /* Анимация свечения */
+}
+
+/* Стили для изображения внутри кружка */
+#tap-circle img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    border: 4px solid white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    aspect-ratio: 1; /* Принудительно делаем изображение квадратным */
 }
 
 
@@ -84,9 +96,28 @@ h1 {
 
 .shop {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 20px; /* Расстояние между кнопками */
     margin-top: 20px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-row  .btn {
+    width: 200px; /* Фиксированная ширина кнопок */
+    height: 50px; /* Фиксированная высота кнопок */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 16px; /* Размер шрифта */
+    padding: 10px; /* Внутренний отступ */
+    box-sizing: border-box; /* Учитываем padding в общей ширине */
 }
 /* Стили для кнопок */
 .btn {
@@ -298,4 +329,75 @@ h1 {
         padding: 8px 16px;
         font-size: 14px;
     }
+}
+/* Стили для модального окна выбора персонажа */
+#character-modal .modal-content {
+    background: #34495e;
+    margin: 10% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+    max-height: 80vh; /* Ограничиваем высоту модального окна */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Стили для списка персонажей */
+.character-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto; /* Добавляем вертикальный скролл */
+    padding-right: 10px; /* Отступ для скролла */
+    margin-top: 10px; /* Отступ сверху */
+}
+
+/* Стили для элемента персонажа */
+.character-item {
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.character-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.character-item img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.character-item span {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Стили для скролла */
+.character-list::-webkit-scrollbar {
+    width: 8px; /* Ширина скролла */
+}
+
+.character-list::-webkit-scrollbar-track {
+    background: #2c3e50; /* Цвет трека */
+    border-radius: 4px;
+}
+
+.character-list::-webkit-scrollbar-thumb {
+    background: #3498db; /* Цвет ползунка */
+    border-radius: 4px;
+}
+
+.character-list::-webkit-scrollbar-thumb:hover {
+    background: #2980b9; /* Цвет ползунка при наведении */
 }

@@ -29,10 +29,15 @@
     </div>
 
     <div class="shop">
-    <button class="btn" onclick="openShop()">Магазин 🛒</button>
-    <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
-    <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+    <div class="button-row">
+        <button class="btn" onclick="openShop()">Магазин 🛒</button>
+        <button class="btn" onclick="openCharacterModal()">Выбрать персонажа 🎭</button>
     </div>
+    <div class="button-row">
+        <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
+        <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+    </div>
+</div>
 </div>
 
 <div id="shop-modal" class="modal">
@@ -61,6 +66,13 @@
             </div>
         </div>
         <button class="btn close" onclick="closeShop()">Закрыть</button>
+    </div>
+</div>
+<div id="character-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCharacterModal()">&times;</span>
+        <h2>Выберите персонажа</h2>
+        <div id="character-list" class="character-list"></div>
     </div>
 </div>
 <div id="leaderboard-modal" class="modal">
