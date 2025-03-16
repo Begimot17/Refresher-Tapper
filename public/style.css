@@ -49,6 +49,7 @@ h1 {
 
 /* Стили для tap-circle */
 /* Стили для кружка */
+/* Основные стили для кружочка */
 #tap-circle {
     width: 90%; /* Ширина 90% от родительского контейнера */
     aspect-ratio: 1; /* Сохраняем квадратную форму */
@@ -63,28 +64,55 @@ h1 {
     transition: transform 0.2s ease, box-shadow 0.3s ease; /* Плавные переходы */
     -webkit-tap-highlight-color: transparent;
     animation: glow 2s infinite alternate; /* Анимация свечения */
+    position: relative; /* Для позиционирования внутренних элементов */
+    overflow: hidden; /* Скрываем содержимое, выходящее за границы */
 }
 
-/* Стили для изображения внутри кружка */
-#tap-circle img {
+/* Стили для передней и задней сторон кружочка */
+.circle-front,
+.circle-back {
+    position: absolute;
     width: 100%;
     height: 100%;
+    backface-visibility: hidden; /* Скрываем обратную сторону */
+    transition: transform 0.6s ease; /* Плавный переход для переворота */
     border-radius: 50%;
-    object-fit: cover;
-    object-position: center;
-    border: 4px solid white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    aspect-ratio: 1; /* Принудительно делаем изображение квадратным */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d; /* Сохраняем 3D-пространство */
 }
 
-
-/* Эффекты при нажатии */
-#tap-circle:active {
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
+/* Передняя сторона (изображение героя) */
+.circle-front {
+    background: transparent;
 }
 
-/* Стили для изображения внутри кружка */
+/* Задняя сторона (описание героя) */
+.circle-back {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4); /* Градиентный фон */
+    transform: rotateY(180deg); /* Изначально скрыта */
+    padding: 20px;
+    text-align: center;
+    color: black;
+    font-size: 24px; /* Большой размер шрифта */
+    line-height: 1.6; /* Увеличенный межстрочный интервал */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); /* Тень внутри */
+    font-family: 'Roboto', sans-serif; /* Современный шрифт */
+    font-weight: 500; /* Полужирный шрифт */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5); /* Тень текста для лучшей читаемости */
+}
+
+/* Переворот кружочка */
+#tap-circle.flipped .circle-front {
+    transform: rotateY(180deg);
+}
+
+#tap-circle.flipped .circle-back {
+    transform: rotateY(0deg);
+}
+
+/* Стили для изображения внутри кружочка */
 #tap-circle img {
     width: 90%; /* Размер изображения */
     height: 90%;
@@ -92,6 +120,15 @@ h1 {
     object-fit: cover; /* Сохраняем пропорции */
     border: 4px solid white; /* Белая рамка */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Тень для изображения */
+}
+
+/* Эффекты при нажатии */
+#tap-circle:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+#character-description {
+    white-space: pre-line; /* Сохраняет переносы строк и пробелы */
 }
 
 .shop {

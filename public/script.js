@@ -2,6 +2,7 @@ let score = 0;
 let coins = 0;
 let level = 1;
 let coin_for_level = 10;
+let score_for_level = 100;
 let xp = 0;
 let multiplier = 1;
 let autoClickerActive = false;
@@ -11,6 +12,10 @@ let criticalHitCount = 0; // Уровень улучшения "Критичес
 let coinBonusCount = 0;   // Уровень улучшения "Бонус монет"
 let xpBoostCount = 0;
 let selectedCharacter = null;
+let touchStartX = 0;
+let touchEndX = 0;
+
+
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
@@ -25,18 +30,21 @@ const config = {
             entryLevel: 1,
             image: 'images/bogdan.jpg',
             sound: 'sounds/bogdan.m4a',
+            description: "Душа компании, любит вейпы. Военный"
         },
         {
             name: "Глебаста",
             entryLevel: 5,
             image: 'images/glebasta.jpg',
             sound: 'sounds/default.mp3',
+            description: "Душа компании, любит короля и шута. Моряк"
         },
         {
             name: "Любомир",
             entryLevel: 10,
             image: 'images/lubomir.jpg',
             sound: 'sounds/default.mp3',
+            description: "Душа компании, любит Серьёзного Сема. Ветеринар"
         },
         {
             name: "Глебаста",
@@ -143,7 +151,7 @@ function getCurrentCharacter() {
 }
 
 function checkLevelUp() {
-    const neededXP = level * 100;
+    const neededXP = level * score_for_level;
     if (xp >= neededXP) {
         updateLevel()
         xp -= neededXP;
@@ -180,7 +188,46 @@ function updateLevel() {
     levelElement.textContent = formatNumber(level);
     showPopup('level-popup', 1);
 }
+tapCircle.addEventListener('touchstart', (event) => {
+    touchStartX = event.touches[0].clientX;
+});
 
+// Обработка окончания касания
+tapCircle.addEventListener('touchend', (event) => {
+    touchEndX = event.changedTouches[0].clientX;
+    handleSwipe();
+});
+
+// Обработка клика для возврата в исходное состояние
+tapCircle.addEventListener('click', () => {
+    if (tapCircle.classList.contains('flipped')) {
+        tapCircle.classList.remove('flipped');
+    }
+});
+function handleSwipe() {
+    const swipeDistance = touchEndX - touchStartX;
+    const swipeThreshold = 50; // Минимальное расстояние для свайпа
+
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+            // Свайп вправо
+            tapCircle.classList.add('flipped');
+        } else {
+            // Свайп влево
+            tapCircle.classList.add('flipped');
+        }
+        updateCharacterDescription(); // Обновляем описание при перевороте
+    }
+}
+
+function updateCharacterDescription() {
+    const character = getCurrentCharacter();
+    const descriptionElement = document.getElementById('character-description');
+    if (character && descriptionElement) {
+        const descriptionText = `${character.name}\n${character.description || 'Описание отсутствует.'}`;
+        descriptionElement.innerHTML = descriptionText.replace(/\n/g, '<br>'); // Заменяем \n на <br>
+    }
+}
 function buyUpgrade(upgradeId) {
     const upgrade = shopConfig.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) {
@@ -553,9 +600,9 @@ function loadProgress() {
 
 function formatNumber(number) {
     if (number >= 1000000) {
-        return (number / 1000000).toFixed(2) + 'M'; // Миллионы
+        return (number / 1000000).toFixed(3) + 'M'; // Миллионы
     } else if (number >= 1000) {
-        return (number / 1000).toFixed(2) + 'K'; // Тысячи
+        return (number / 1000).toFixed(3) + 'K'; // Тысячи
     } else {
         return number.toString(); // Меньше 1000
     }
@@ -606,14 +653,17 @@ function createLevelUpEffect() {
 }
 
 function updateImage() {
-    const character = getCurrentCharacter(); // Получаем текущего персонажа
+    const character = getCurrentCharacter();
     const tapImage = document.getElementById('tap-image');
     const tapSound = document.getElementById('tap-sound');
 
-    // Плавное изменение изображения
-    tapImage.src = character.image
-
+    tapImage.src = character.image;
     tapSound.src = character.sound;
+
+    // Обновляем описание, если кружок перевернут
+    if (tapCircle.classList.contains('flipped')) {
+        updateCharacterDescription();
+    }
 }
 
 function showNewCharacterPopup(character) {
