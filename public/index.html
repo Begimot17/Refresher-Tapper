@@ -29,9 +29,9 @@
     </div>
 
     <div class="shop">
-        <button class="btn" onclick="openShop()">Магазин 🛒</button>
-        <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
-        <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+    <button class="btn" onclick="openShop()">Магазин 🛒</button>
+    <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
+    <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
     </div>
 </div>
 
@@ -40,13 +40,13 @@
         <h2>🛒 Магазин улучшений</h2>
         <div class="upgrade" onclick="buyUpgrade('multiplier')">
             <div class="upgrade-header">
-                🚀 ×2 Множитель
+                🚀 +1 Множитель
                 <button class="btn buy-btn">Купить</button>
             </div>
             <div class="upgrade-details">
-                Стоимость: <span id="multiplier-cost">50</span> 🪙
+                Цена: <span id="multiplier-cost">50</span> 🪙
                 <br>
-                Текущее количество: <span id="multiplier-count">0</span>
+                Куплено: <span id="multiplier-count">0</span>
             </div>
         </div>
         <div class="upgrade" onclick="buyUpgrade('auto-click')">
@@ -55,9 +55,9 @@
                 <button class="btn buy-btn">Купить</button>
             </div>
             <div class="upgrade-details">
-                Стоимость: <span id="auto-click-cost">100</span> 🪙
+                Цена: <span id="auto-click-cost">100</span> 🪙
                 <br>
-                Текущее количество: <span id="auto-click-count">0</span>
+                Куплено: <span id="auto-click-count">0</span>
             </div>
         </div>
         <button class="btn close" onclick="closeShop()">Закрыть</button>
