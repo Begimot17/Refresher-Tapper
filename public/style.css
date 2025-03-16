@@ -401,3 +401,27 @@ h1 {
 .character-list::-webkit-scrollbar-thumb:hover {
     background: #2980b9; /* Цвет ползунка при наведении */
 }
+.character-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+}
+
+.character-item img, .locked-character {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.locked-character {
+    background-color: black;
+}
+
+.next-unlock {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}

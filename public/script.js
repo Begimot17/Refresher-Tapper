@@ -17,20 +17,32 @@ const config = {
     characters: [
         {
             name: "Богдан",
-            levels: [1, 2, 3, 4],
+            entryLevel: 1,
             image: 'images/bogdan.jpg',
             sound: 'sounds/bogdan.m4a',
         },
         {
             name: "Глебаста",
-            levels: [5, 6, 7, 8, 9],
+            entryLevel: 5,
             image: 'images/glebasta.jpg',
             sound: 'sounds/default.mp3',
         },
         {
             name: "Любомир",
-            levels: [10, 11, 12, 13, 14],
+            entryLevel: 10,
             image: 'images/lubomir.jpg',
+            sound: 'sounds/default.mp3',
+        },
+        {
+            name: "Глебаста",
+            entryLevel:114,
+            image: 'images/glebasta.jpg',
+            sound: 'sounds/default.mp3',
+        },
+        {
+            name: "Глебаста",
+            entryLevel:2000,
+            image: 'images/glebasta.jpg',
             sound: 'sounds/default.mp3',
         },
     ],
@@ -66,11 +78,9 @@ function closeShop() {
 }
 
 function getCurrentCharacter() {
-    return config.characters.find(character => character.levels.includes(level)) || {
-        name: "Default",
-        image: config.defaultImage,
-        sound: config.defaultSound,
-    };
+    return config.characters
+        .filter(character => level >= character.entryLevel)
+        .reduce((prev, curr) => (curr.entryLevel > prev.entryLevel ? curr : prev), config.characters[0]);
 }
 
 function checkLevelUp() {
@@ -494,25 +504,55 @@ function openCharacterModal() {
     const characterList = document.getElementById('character-list');
     characterList.innerHTML = '';
 
-    // Фильтруем персонажей, доступных на текущем уровне
-    const availableCharacters = config.characters.filter(character =>
-        character.levels.some(lvl => lvl <= level)
-    );
+    // Определяем минимальный уровень, при котором откроется следующий персонаж
+    const nextUnlockLevel = config.characters
+        .map(character => character.entryLevel)
+        .filter(lvl => lvl > level)
+        .sort((a, b) => a - b)[0]; // Берем минимальный из доступных уровней
 
-    // Добавляем персонажей в список
-    availableCharacters.forEach(character => {
+    config.characters.forEach(character => {
         const characterItem = document.createElement('div');
         characterItem.className = 'character-item';
-        characterItem.innerHTML = `
-            <img src="${character.image}" alt="${character.name}">
-            <span>${character.name}</span>
-        `;
-        characterItem.onclick = () => selectCharacter(character);
+
+        if (character.entryLevel <= level) {
+            // Открытые персонажи
+            characterItem.innerHTML = `
+                <img src="${character.image}" alt="${character.name}">
+                <span>${character.name}</span>
+            `;
+            characterItem.onclick = () => selectCharacter(character);
+        } else {
+            // Заблокированные персонажи
+            characterItem.innerHTML = `
+                <div class="locked-character"></div>
+                <span>???</span>
+                <small>Откроется на уровне ${character.entryLevel}</small>
+            `;
+        }
+
         characterList.appendChild(characterItem);
     });
 
+    // Проверяем, есть ли блок с информацией о следующем уровне, если нет — создаем
+    let nextUnlockInfo = document.getElementById('next-unlock-info');
+    if (!nextUnlockInfo) {
+        nextUnlockInfo = document.createElement('div');
+        nextUnlockInfo.id = 'next-unlock-info';
+        nextUnlockInfo.className = 'next-unlock';
+        document.getElementById('character-modal').appendChild(nextUnlockInfo);
+    }
+
+    // Показываем информацию о следующем уровне для открытия персонажа
+    nextUnlockInfo.textContent = nextUnlockLevel
+        ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
+        : 'Все персонажи открыты';
+
     document.getElementById('character-modal').style.display = 'block';
 }
+
+
+
+
 
 // Закрытие модального окна
 function closeCharacterModal() {
