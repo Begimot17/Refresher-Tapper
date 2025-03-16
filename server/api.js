@@ -65,7 +65,6 @@ app.get('/api/leaderboard', async (req, res) => {
     try {
         const leaderboard = await User.find()
             .sort({ score: -1 })
-            .limit(10)
             .select('username score');
         res.json(leaderboard);
     } catch (error) {

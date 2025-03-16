@@ -44,18 +44,12 @@ const config = {
             entryLevel: 10,
             image: 'images/lubomir.jpg',
             sound: 'sounds/default.mp3',
-            description: "Душа компании, любит Серьёзного Сема. Ветеринар"
+            description: "Душа компании, любит Серьёзного Сема. Ветеран"
         },
         {
             name: "Глебаста",
             entryLevel: 114,
             image: 'images/glebasta.jpg',
-            sound: 'sounds/default.mp3',
-        },
-        {
-            name: "Любомир",
-            entryLevel: 161,
-            image: 'images/lubomir.jpg',
             sound: 'sounds/default.mp3',
         },
         {
@@ -138,7 +132,21 @@ tapCircle.addEventListener('click', (event) => {
     xp += multiplier;
     checkLevelUp();
 });
+const scoreItems = document.querySelectorAll('.score-item');
 
+scoreItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const tooltip = item.querySelector('.tooltip');
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = 1;
+
+        // Скрываем подсказку через 2 секунды
+        setTimeout(() => {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = 0;
+        }, 2000);
+    });
+});
 function closeShop() {
     document.getElementById('shop-modal').style.display = 'none';
 }
@@ -671,7 +679,7 @@ function showNewCharacterPopup(character) {
     popup.className = 'level-up-popup';
     popup.innerHTML = `
         <h2>🎉 Новый персонаж!</h2>
-        <p>Теперь вы играете за ${character.name}!</p>
+        <p>${character.name}!</p>
     `;
     document.body.appendChild(popup);
 }
