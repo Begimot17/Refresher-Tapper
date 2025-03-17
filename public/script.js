@@ -23,7 +23,7 @@ const tapCircle = document.getElementById('tap-circle');
 const scoreElement = document.getElementById('score');
 const coinsElement = document.getElementById('coins');
 const levelElement = document.getElementById('level');
-const config = {
+const configCharacter = {
     characters: [
         {
             name: "Богдан",
@@ -687,7 +687,7 @@ function showNewCharacterPopup(character) {
 
 function getCharacterForLevel(currentLevel) {
     let unlockedCharacter = null;
-    for (const character of config.characters) {
+    for (const character of configCharacter.characters) {
         if (currentLevel >= character.entryLevel) {
             unlockedCharacter = character;
         } else {
@@ -754,12 +754,12 @@ function openCharacterModal() {
     const characterList = document.getElementById('character-list');
     characterList.innerHTML = '';
 
-    const nextUnlockLevel = config.characters
+    const nextUnlockLevel = configCharacter.characters
         .map(character => character.entryLevel)
         .filter(lvl => lvl > level)
         .sort((a, b) => a - b)[0];
 
-    config.characters.forEach(character => {
+    configCharacter.characters.forEach(character => {
         const characterItem = document.createElement('div');
         characterItem.className = 'character-item';
 
