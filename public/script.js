@@ -117,21 +117,48 @@ const shopConfig = {
     ],
 };
 const tapSound = document.getElementById('tap-sound');
-
-tapCircle.addEventListener('click', (event) => {
+function handleTap(event) {
     tapSound.currentTime = 0;
     tapSound.play();
+    createTapEffect(event.clientX, event.clientY);
 
-    const x = event.clientX;
-    const y = event.clientY;
+    // Базовые значения
+    let scoreEarned = multiplier;
+    let coinsEarned = multiplier;
+    let xpEarned = multiplier;
 
-    createTapEffect(x, y);
+    // Критический удар
+    const criticalHitChance = 0.1 + (criticalHitCount * 0.05);
+    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5);
+    if (Math.random() < criticalHitChance) {
+        scoreEarned *= criticalHitMultiplier;
+        coinsEarned *= criticalHitMultiplier;
+        xpEarned *= criticalHitMultiplier;
+        createCriticalHitEffect(event.clientX, event.clientY);
+    }
 
-    updateScore(multiplier);
-    updateCoins(multiplier);
-    xp += multiplier;
+    // Бонус монет
+    const coinBonusMultiplier = 1 + (coinBonusCount * 0.2);
+    coinsEarned *= coinBonusMultiplier;
+
+    // Ускорение опыта
+    const xpBoostMultiplier = 1 + (xpBoostCount * 0.3);
+    xpEarned *= xpBoostMultiplier;
+
+    // Округляем значения до целых чисел
+    coinsEarned = Math.round(coinsEarned); // Округляем до ближайшего целого
+    xpEarned = Math.round(xpEarned); // Округляем до ближайшего целого
+
+    // Обновляем значения
+    updateScore(scoreEarned);
+    updateCoins(coinsEarned);
+    xp += xpEarned;
+
     checkLevelUp();
-});
+}
+
+// Устанавливаем обработчик клика
+tapCircle.addEventListener('click', handleTap);
 const scoreItems = document.querySelectorAll('.score-item');
 
 scoreItems.forEach(item => {
@@ -172,7 +199,7 @@ function checkLevelUp() {
 
 function showPopup(elementId, value) {
     const popup = document.getElementById(elementId);
-    popup.textContent = `+${value}`;
+    popup.textContent = `+${formatNumber(value)}`;
     popup.classList.add('show');
     setTimeout(() => {
         popup.classList.remove('show');
@@ -214,7 +241,7 @@ tapCircle.addEventListener('click', () => {
 });
 function handleSwipe() {
     const swipeDistance = touchEndX - touchStartX;
-    const swipeThreshold = 50; // Минимальное расстояние для свайпа
+    const swipeThreshold = 150; // Минимальное расстояние для свайпа
 
     if (Math.abs(swipeDistance) > swipeThreshold) {
         if (swipeDistance > 0) {
@@ -244,18 +271,21 @@ function buyUpgrade(upgradeId) {
     }
 
     const currentLevel = getUpgradeLevel(upgradeId);
+
+    // Проверяем, достигнут ли максимальный уровень
+    if (currentLevel >= upgrade.maxLevel) {
+        showError('Максимальный уровень улучшения уже достигнут.');
+        return;
+    }
+
     const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
 
+    // Проверяем, достаточно ли монет
     if (coins >= cost) {
         coins -= cost;
-        increaseUpgradeLevel(upgradeId);
-
-        applyUpgradeEffect(upgrade.effect);
-
-        const rect = document.querySelector(`.upgrade[data-id="${upgradeId}"]`).getBoundingClientRect();
-        createUpgradeEffect(`${upgrade.icon} ${upgrade.name} улучшен!`, rect.left + 50, rect.top);
-
-        updateUI();
+        increaseUpgradeLevel(upgradeId); // Увеличиваем уровень улучшения
+        applyUpgradeEffect(upgrade.effect); // Применяем эффект улучшения
+        updateUI(); // Обновляем интерфейс
     } else {
         showError('Недостаточно монет для покупки улучшения.');
     }
@@ -334,6 +364,8 @@ function applyAutoClickerEffect() {
             coins += multiplier;
             xp += multiplier;
 
+            updateScore(multiplier);
+            updateCoins(multiplier);
             checkLevelUp();
             updateUI();
 
@@ -343,77 +375,15 @@ function applyAutoClickerEffect() {
 }
 
 function applyCriticalHitEffect() {
-    const criticalHitChance = 0.1 + (criticalHitCount * 0.05);
-    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5);
-
-    // Переопределяем функцию обработки клика
-    tapCircle.removeEventListener('click', handleTap);
-    tapCircle.addEventListener('click', handleTap);
-
-    function handleTap(event) {
-        tapSound.currentTime = 0;
-        tapSound.play();
-        createTapEffect(event.clientX, event.clientY);
-        if (Math.random() < criticalHitChance) {
-            const criticalScore = multiplier * criticalHitMultiplier;
-            const criticalCoins = multiplier * criticalHitMultiplier;
-            const criticalXp = multiplier * criticalHitMultiplier;
-            updateScore(criticalScore);
-            updateCoins(criticalCoins);
-            xp += criticalXp;
-            createCriticalHitEffect(event.clientX, event.clientY);
-        } else {
-            updateScore(multiplier);
-            updateCoins(multiplier);
-            xp += multiplier;
-        }
-
-        checkLevelUp();
-    }
-
-    console.log(`Критический удар улучшен! Шанс: ${criticalHitChance * 100}%, Множитель: x${criticalHitMultiplier}`);
+    console.log(`Критический удар улучшен! Шанс: ${(0.1 + (criticalHitCount * 0.05)) * 100}%, Множитель: x${2 + (criticalHitCount * 0.5)}`);
 }
 
 function applyCoinBonusEffect() {
-    const coinBonusMultiplier = 1 + (coinBonusCount * 0.2); // +20% монет за каждый уровень
-    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
-    tapCircle.addEventListener('click', handleTap); // Добавляем новый
-
-    function handleTap(event) {
-        tapSound.currentTime = 0;
-        tapSound.play();
-        createTapEffect(event.clientX, event.clientY);
-        updateScore(multiplier);
-        xp += multiplier;
-        const coinsEarned = multiplier * coinBonusMultiplier;
-        updateCoins(coinsEarned);
-
-        checkLevelUp();
-    }
-
-    console.log(`Бонус монет улучшен! Множитель монет: x${coinBonusMultiplier}`);
+    console.log(`Бонус монет улучшен! Множитель монет: x${1 + (coinBonusCount * 0.2)}`);
 }
 
 function applyXpBoostEffect() {
-    const xpBoostMultiplier = 1 + (xpBoostCount * 0.3); // +30% опыта за каждый уровень
-
-    tapCircle.removeEventListener('click', handleTap); // Удаляем старый обработчик
-    tapCircle.addEventListener('click', handleTap); // Добавляем новый
-
-    function handleTap(event) {
-        tapSound.currentTime = 0;
-        tapSound.play();
-        createTapEffect(event.clientX, event.clientY);
-        updateScore(multiplier);
-        updateCoins(multiplier);
-
-        const xpEarned = multiplier * xpBoostMultiplier;
-        xp += xpEarned;
-
-        checkLevelUp();
-    }
-
-    console.log(`Ускорение опыта улучшено! Множитель опыта: x${xpBoostMultiplier}`);
+    console.log(`Ускорение опыта улучшено! Множитель опыта: x${1 + (xpBoostCount * 0.3)}`);
 }
 
 function createCriticalHitEffect(x, y) {
@@ -427,33 +397,40 @@ function createCriticalHitEffect(x, y) {
 }
 
 function renderShop() {
-    const upgradesList = document.getElementById('upgrades-list');
-    upgradesList.innerHTML = '';
+    const upgradesList = $('#upgrades-list');
+    upgradesList.empty(); // Очищаем список улучшений
 
     shopConfig.upgrades.forEach(upgrade => {
-        const upgradeElement = document.createElement('div');
-        upgradeElement.className = 'upgrade';
-        upgradeElement.setAttribute('data-id', upgrade.id);
-        upgradeElement.onclick = () => buyUpgrade(upgrade.id);
-
         const currentLevel = getUpgradeLevel(upgrade.id);
         const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
 
-        upgradeElement.innerHTML = `
+        // Проверяем, достигнут ли максимальный уровень
+        const isMaxLevel = currentLevel >= upgrade.maxLevel;
+
+        // Создаем элемент улучшения
+        const upgradeElement = $('<div>', {
+            class: 'upgrade',
+            'data-id': upgrade.id,
+            click: () => buyUpgrade(upgrade.id) // Обработчик клика
+        });
+
+        // Заполняем содержимое элемента
+        upgradeElement.html(`
             <div class="upgrade-header">
                 ${upgrade.icon} ${upgrade.name}
-                <button class="btn buy-btn">Купить</button>
+                ${isMaxLevel ? '<span class="max-level">MAX</span>' : '<button class="btn buy-btn">Купить</button>'}
             </div>
             <div class="upgrade-details">
-                Цена: <span class="upgrade-cost">${formatNumber(cost)}</span> 🪙
+                Цена: <span class="upgrade-cost">${isMaxLevel ? '—' : formatNumber(cost)}</span> 🪙
                 <br>
                 Уровень: <span class="upgrade-level">${currentLevel}</span> / ${upgrade.maxLevel}
                 <br>
                 <small>${upgrade.description}</small>
             </div>
-        `;
+        `);
 
-        upgradesList.appendChild(upgradeElement);
+        // Добавляем элемент в список
+        upgradesList.append(upgradeElement);
     });
 }
 
@@ -463,60 +440,71 @@ function openShop() {
 }
 
 function showLeaderboard() {
-    fetch('/api/leaderboard')
-        .then(response => response.json())
-        .then(data => {
-            const leaderboardList = document.getElementById('leaderboard-list');
-            leaderboardList.innerHTML = '';
+    saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
+    const currentUser = Telegram.WebApp.initDataUnsafe.user; // Получаем данные текущего пользователя
+    const currentUsername = currentUser?.username || 'unknown'; // Используем username из Telegram
+
+    $.ajax({
+        url: '/api/leaderboard',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            const leaderboardList = $('#leaderboard-list');
+            leaderboardList.empty();
 
             if (data.length === 0) {
-                leaderboardList.innerHTML = '<li>Рекорды пока отсутствуют.</li>';
+                leaderboardList.append('<li>Рекорды пока отсутствуют.</li>');
             } else {
                 data.forEach((player, index) => {
-                    const li = document.createElement('li');
-                    const usernameLink = document.createElement('a');
+                    const li = $('<li>');
+                    const playerUsername = player.username || 'unknown'; // Используем username из данных или 'unknown'
 
-                    usernameLink.href = `https://t.me/${player.username}`;
-                    usernameLink.textContent = `@${player.username || 'unknown'}`;
-                    usernameLink.style.textDecoration = 'none';
-                    usernameLink.style.color = '#007BFF';
-                    usernameLink.style.cursor = 'pointer';
-                    usernameLink.target = '_blank'; // Открывать ссылку в новой вкладке
+                    const usernameLink = $('<a>', {
+                        href: `https://t.me/${playerUsername}`,
+                        text: `@${playerUsername}`,
+                        css: {
+                            textDecoration: 'none',
+                            color: '#007BFF',
+                            cursor: 'pointer'
+                        },
+                        target: '_blank' // Открывать ссылку в новой вкладке
+                    });
 
-                    const placeNumber = document.createElement('span');
-                    placeNumber.textContent = `${index + 1}. `;
-                    li.appendChild(placeNumber);
+                    const placeNumber = $('<span>').text(`${index + 1}. `);
+                    li.append(placeNumber);
 
+                    // Добавляем медали для первых трёх мест
                     if (index === 0) {
-                        const goldMedal = document.createElement('span');
-                        goldMedal.textContent = '🥇 ';
-                        li.appendChild(goldMedal);
+                        li.append($('<span>').text('🥇 '));
                     } else if (index === 1) {
-                        const silverMedal = document.createElement('span');
-                        silverMedal.textContent = '🥈 ';
-                        li.appendChild(silverMedal);
+                        li.append($('<span>').text('🥈 '));
                     } else if (index === 2) {
-                        const bronzeMedal = document.createElement('span');
-                        bronzeMedal.textContent = '🥉 ';
-                        li.appendChild(bronzeMedal);
+                        li.append($('<span>').text('🥉 '));
                     }
 
-                    li.appendChild(usernameLink);
-                    li.appendChild(document.createTextNode(`: ${formatNumber(player.score)}`));
-                    leaderboardList.appendChild(li);
+                    li.append(usernameLink);
+                    li.append(`: ${formatNumber(player.score)}`);
+
+                    // Подсвечиваем текущего пользователя
+                    if (playerUsername === currentUsername) {
+                        li.css({
+                            backgroundColor: '#2c3e50', // Светло-голубой фон
+                            fontWeight: 'bold' // Жирный шрифт
+                        });
+                    }
+
+                    leaderboardList.append(li);
                 });
             }
 
-            const modal = document.getElementById('leaderboard-modal');
-            modal.style.display = 'block';
-        })
-        .catch(error => {
+            $('#leaderboard-modal').show();
+        },
+        error: function(error) {
             console.error('Ошибка загрузки таблицы рекордов:', error);
-            const leaderboardList = document.getElementById('leaderboard-list');
-            leaderboardList.innerHTML = '<li>Не удалось загрузить рекорды.</li>';
-            const modal = document.getElementById('leaderboard-modal');
-            modal.style.display = 'block';
-        });
+            $('#leaderboard-list').html('<li>Не удалось загрузить рекорды.</li>');
+            $('#leaderboard-modal').show();
+        }
+    });
 }
 
 function closeLeaderboard() {
@@ -550,13 +538,18 @@ function saveProgress() {
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
 
-    fetch('/api/save', {
+    $.ajax({
+        url: '/api/save',
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+        contentType: 'application/json',
+        data: JSON.stringify({ userId, ...gameData }),
+        success: function(response) {
+            console.log('Данные успешно сохранены:', response);
         },
-        body: JSON.stringify({userId, ...gameData}), // Отправляем username на сервер
-    }).catch(error => console.error('Ошибка сохранения:', error));
+        error: function(error) {
+            console.error('Ошибка сохранения:', error);
+        }
+    });
 }
 
 function loadProgress() {
@@ -574,7 +567,7 @@ function loadProgress() {
             criticalHitCount = data.criticalHitCount || 0;
             coinBonusCount = data.coinBonusCount || 0;
             xpBoostCount = data.xpBoostCount || 0;
-            updateUI();
+            updateUI(); // Обновляем интерфейс
         } catch (e) {
             console.error('Ошибка загрузки из localStorage:', e);
         }
@@ -582,9 +575,11 @@ function loadProgress() {
 
     const userId = Telegram.WebApp.initDataUnsafe.user?.id;
     if (userId) {
-        fetch(`/api/load?userId=${userId}`)
-            .then(response => response.json())
-            .then(data => {
+        $.ajax({
+            url: `/api/load?userId=${userId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
                 if (data) {
                     score = data.score || score;
                     coins = data.coins || coins;
@@ -596,39 +591,49 @@ function loadProgress() {
                     criticalHitCount = data.criticalHitCount || criticalHitCount;
                     coinBonusCount = data.coinBonusCount || coinBonusCount;
                     xpBoostCount = data.xpBoostCount || xpBoostCount;
-                    updateUI();
+                    updateUI(); // Обновляем интерфейс
                 }
-            })
-            .catch(error => console.error('Ошибка загрузки с сервера:', error));
+            },
+            error: function(error) {
+                console.error('Ошибка загрузки с сервера:', error);
+            }
+        });
     }
 
-    updateImage();
+    updateImage(); // Обновляем изображение
 }
 
 
 function formatNumber(number) {
-    if (number >= 1000000) {
-        return (number / 1000000).toFixed(3) + 'M'; // Миллионы
-    } else if (number >= 1000) {
-        return (number / 1000).toFixed(3) + 'K'; // Тысячи
+    if (number >= 1e12) { // Триллионы
+        return (number / 1e12).toFixed(3) + 'T';
+    } else if (number >= 1e9) { // Миллиарды
+        return (number / 1e9).toFixed(3) + 'B';
+    } else if (number >= 1e6) { // Миллионы
+        return (number / 1e6).toFixed(3) + 'M';
+    } else if (number >= 1e3) { // Тысячи
+        return (number / 1e3).toFixed(3) + 'K';
     } else {
         return number.toString(); // Меньше 1000
     }
 }
-
 function updateUI() {
-    scoreElement.textContent = formatNumber(score);
-    coinsElement.textContent = formatNumber(coins);
-    levelElement.textContent = formatNumber(level);
+    $('#score').text(formatNumber(score));
+    $('#coins').text(formatNumber(coins));
+    $('#level').text(formatNumber(level));
 
+    // Проверяем, нужно ли активировать автокликер
+
+
+    // Обновляем магазин
     shopConfig.upgrades.forEach(upgrade => {
         const currentLevel = getUpgradeLevel(upgrade.id);
         const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
 
-        const upgradeElement = document.querySelector(`.upgrade[data-id="${upgrade.id}"]`);
-        if (upgradeElement) {
-            upgradeElement.querySelector('.upgrade-cost').textContent = formatNumber(cost);
-            upgradeElement.querySelector('.upgrade-level').textContent = currentLevel;
+        const upgradeElement = $(`.upgrade[data-id="${upgrade.id}"]`);
+        if (upgradeElement.length) {
+            upgradeElement.find('.upgrade-cost').text(formatNumber(cost));
+            upgradeElement.find('.upgrade-level').text(currentLevel);
         }
     });
 }
@@ -804,7 +809,6 @@ function selectCharacter(character) {
     selectedCharacter = character; // Устанавливаем выбранного персонажа
     updateImage(); // Обновляем изображение
     closeCharacterModal(); // Закрываем модальное окно
-    saveProgress(); // Сохраняем прогресс, включая selectedCharacterId
 }
 
 loadProgress();
