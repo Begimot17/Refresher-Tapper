@@ -101,7 +101,7 @@ const shopConfig = {
             baseCost: 50,
             costIncrease: 50,
             effect: 'multiplier',
-            maxLevel: 500,
+            maxLevel: 2500,
             icon: '🍺',
         },
         {
@@ -111,7 +111,7 @@ const shopConfig = {
             baseCost: 100,
             costIncrease: 100,
             effect: 'autoClicker',
-            maxLevel: 500,
+            maxLevel: 1000,
             icon: '🏎️',
         },
         {
@@ -121,7 +121,7 @@ const shopConfig = {
             baseCost: 500,
             costIncrease: 500,
             effect: 'criticalHit',
-            maxLevel: 200,
+            maxLevel: 500,
             icon: '💥',
         },
         {
@@ -131,7 +131,7 @@ const shopConfig = {
             baseCost: 10000,
             costIncrease: 2500,
             effect: 'coinBonus',
-            maxLevel: 200,
+            maxLevel: 250,
             icon: '💰',
         },
         {
@@ -141,7 +141,7 @@ const shopConfig = {
             baseCost: 25000,
             costIncrease: 10000,
             effect: 'xpBoost',
-            maxLevel: 100,
+            maxLevel: 250,
             icon: '📦',
         },
     ],
@@ -233,7 +233,7 @@ function showPopup(elementId, value) {
     popup.classList.add('show');
     setTimeout(() => {
         popup.classList.remove('show');
-    }, 1000);
+    }, 2000);
 }
 
 function updateScore(points) {
@@ -597,40 +597,41 @@ function loadProgress() {
             criticalHitCount = data.criticalHitCount || 0;
             coinBonusCount = data.coinBonusCount || 0;
             xpBoostCount = data.xpBoostCount || 0;
-            updateUI(); // Обновляем интерфейс
+            updateUI();
+
+            // Активируем автокликер при загрузке
+            if (autoClickerCount > 0) {
+                applyAutoClickerEffect();
+            }
         } catch (e) {
             console.error('Ошибка загрузки из localStorage:', e);
         }
     }
 
-    const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-    if (userId) {
-        $.ajax({
-            url: `/api/load?userId=${userId}`,
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                if (data) {
-                    score = data.score || score;
-                    coins = data.coins || coins;
-                    level = data.level || level;
-                    xp = data.xp || xp;
-                    multiplier = data.multiplier || multiplier;
-                    multiplierCount = data.multiplierCount || multiplierCount;
-                    autoClickerCount = data.autoClickerCount || autoClickerCount;
-                    criticalHitCount = data.criticalHitCount || criticalHitCount;
-                    coinBonusCount = data.coinBonusCount || coinBonusCount;
-                    xpBoostCount = data.xpBoostCount || xpBoostCount;
-                    updateUI(); // Обновляем интерфейс
-                }
-            },
-            error: function(error) {
-                console.error('Ошибка загрузки с сервера:', error);
-            }
-        });
-    }
+    // const userId = Telegram.WebApp.initDataUnsafe.user?.id;
+    // if (userId) {
+    //     $.ajax({
+    //         url: `/api/load?userId=${userId}`,
+    //         method: 'GET',
+    //         dataType: 'json',
+    //         success: function(data) {
+    //             if (data) {
+    //                 autoClickerCount = data.autoClickerCount || autoClickerCount;
+    //                 updateUI();
+    //
+    //                 // Активируем автокликер после загрузки с сервера
+    //                 if (data.autoClickerCount > 0) {
+    //                     applyAutoClickerEffect();
+    //                 }
+    //             }
+    //         },
+    //         error: function(error) {
+    //             console.error('Ошибка загрузки с сервера:', error);
+    //         }
+    //     });
+    // }
 
-    updateImage(); // Обновляем изображение
+    updateImage();
 }
 
 
@@ -652,10 +653,6 @@ function updateUI() {
     $('#coins').text(formatNumber(coins));
     $('#level').text(formatNumber(level));
 
-    // Проверяем, нужно ли активировать автокликер
-
-
-    // Обновляем магазин
     shopConfig.upgrades.forEach(upgrade => {
         const currentLevel = getUpgradeLevel(upgrade.id);
         const cost = upgrade.baseCost + (currentLevel * upgrade.costIncrease);
