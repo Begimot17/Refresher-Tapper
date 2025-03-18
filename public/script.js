@@ -81,6 +81,13 @@ const configCharacter = {
             sound: 'sounds/juma.mp3',
             description: "Душа компании, любит Lays. Асперанто-Лаборанто"
         },
+        {
+            name: "Никита",
+            entryLevel: 1000,
+            image: 'images/nikita.jpg',
+            sound: 'sounds/nikita.mp3',
+            description: "Бог"
+        },
     ],
     defaultImage: 'images/bogdan.jpg',
     defaultSound: 'sounds/bogdan.m4a',
