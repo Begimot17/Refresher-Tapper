@@ -36,42 +36,49 @@ const configCharacter = {
             name: "Глебаста",
             entryLevel: 5,
             image: 'images/glebasta.jpg',
-            sound: 'sounds/default_2.mp3',
+            sound: 'sounds/default.mp3',
             description: "Душа компании, любит Короля и Шута. Моряк"
         },
         {
             name: "Любомир",
             entryLevel: 10,
             image: 'images/lubomir.jpg',
-            sound: 'sounds/default.mp3',
+            sound: 'sounds/lubomir.mp3',
             description: "Душа компании, любит Серьёзного Сема. Ветеран"
         },
         {
             name: "Лёша",
             entryLevel: 20,
             image: 'images/lesha_dyachkov.jpg',
-            sound: 'sounds/default_2.mp3',
+            sound: 'sounds/lesha_dyachkov.mp3',
             description: "Душа компании, любит Ланос. Электрик"
         },
         {
-            name: "Жека",
+            name: "Дима",
             entryLevel: 50,
+            image: 'images/dima_brusko.jpg',
+            sound: 'sounds/dima_brusko.mp3',
+            description: "Душа АЙТИ компании, любит Макбук. Программист"
+        },
+        {
+            name: "Жека",
+            entryLevel: 100,
             image: 'images/jeka_isaenko.jpg',
-            sound: 'sounds/default_2.mp3',
+            sound: 'sounds/jeka_isaenko.mp3',
             description: "Душа компании, любит Подушки. Часовщик"
         },
         {
             name: "Саня",
-            entryLevel: 100,
+            entryLevel: 200,
             image: 'images/sasha_isaenko.jpg',
-            sound: 'sounds/default_2.mp3',
+            sound: 'sounds/sasha_isaenko.mp3',
             description: "Душа компании, любит CS GO. Камерщик"
         },
         {
             name: "Жума",
-            entryLevel: 200,
+            entryLevel: 500,
             image: 'images/juma.jpg',
-            sound: 'sounds/default_2.mp3',
+            sound: 'sounds/juma.mp3',
             description: "Душа компании, любит Lays. Асперанто-Лаборанто"
         },
     ],
@@ -765,7 +772,7 @@ function shareProgress() {
 📈 Уровень: *${level}*
 
 💪 Попробуй побить мой рекорд!
-👉 Перейди в бота: @bogdan_tapper_bot
+👉 Перейди в бота: @RefresherTapperBot
     `.trim();
 
     copyToClipboard(shareText);
