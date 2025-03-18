@@ -767,8 +767,8 @@ function shareProgress() {
 
     const shareText = `
 🎮 *Мой прогресс в Refresher Tapper*:
-🔥 Счет: *${score}*
-🪙 Монеты: *${coins}*
+🔥 Счет: *${formatNumber(score)}*
+🪙 Монеты: *${formatNumber(coins)}*
 📈 Уровень: *${level}*
 
 💪 Попробуй побить мой рекорд!
