@@ -88,6 +88,13 @@ const configCharacter = {
             sound: 'sounds/nikita.mp3',
             description: "Бог"
         },
+        {
+            name: "Дуля",
+            entryLevel: 9999,
+            image: 'images/dula.jpg',
+            sound: 'sounds/dula.mp3',
+            description: "😜"
+        },
     ],
     defaultImage: 'images/bogdan.jpg',
     defaultSound: 'sounds/bogdan.m4a',
