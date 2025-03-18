@@ -30,14 +30,14 @@ const configCharacter = {
             entryLevel: 1,
             image: 'images/bogdan.jpg',
             sound: 'sounds/bogdan.m4a',
-            description: "Душа компании, любит вейпы. Военный"
+            description: "Душа компании, любит Вейпы. Военный"
         },
         {
             name: "Глебаста",
             entryLevel: 5,
             image: 'images/glebasta.jpg',
-            sound: 'sounds/default.mp3',
-            description: "Душа компании, любит короля и шута. Моряк"
+            sound: 'sounds/default_2.mp3',
+            description: "Душа компании, любит Короля и Шута. Моряк"
         },
         {
             name: "Любомир",
@@ -47,16 +47,32 @@ const configCharacter = {
             description: "Душа компании, любит Серьёзного Сема. Ветеран"
         },
         {
-            name: "Глебаста",
+            name: "Лёша",
             entryLevel: 114,
-            image: 'images/glebasta.jpg',
-            sound: 'sounds/default.mp3',
+            image: 'images/lesha_dyachkov.jpg',
+            sound: 'sounds/default_2.mp3',
+            description: "Душа компании, любит Ланос. Электрик"
         },
         {
-            name: "Глебаста",
-            entryLevel: 2000,
-            image: 'images/glebasta.jpg',
-            sound: 'sounds/default.mp3',
+            name: "Жека",
+            entryLevel: 200,
+            image: 'images/jeka_isaenko.jpg',
+            sound: 'sounds/default_2.mp3',
+            description: "Душа компании, любит Подушки. Часовщик"
+        },
+        {
+            name: "Саня",
+            entryLevel: 200,
+            image: 'images/sasha_isaenko.jpg',
+            sound: 'sounds/default_2.mp3',
+            description: "Душа компании, любит CS GO. Камерщик"
+        },
+        {
+            name: "Жума",
+            entryLevel: 200,
+            image: 'images/juma.jpg',
+            sound: 'sounds/default_2.mp3',
+            description: "Душа компании, любит Lays. Асперанто-Лаборанто"
         },
     ],
     defaultImage: 'images/bogdan.jpg',
