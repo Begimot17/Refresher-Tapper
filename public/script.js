@@ -165,8 +165,8 @@ function handleTap(event) {
     let xpEarned = multiplier;
 
     // Критический удар
-    const criticalHitChance = 0.1 + (criticalHitCount * 0.05);
-    const criticalHitMultiplier = 2 + (criticalHitCount * 0.5);
+    const criticalHitChance = 0.1 + (criticalHitCount * 0.002);
+    const criticalHitMultiplier = 2 + (criticalHitCount * 0.02);
     if (Math.random() < criticalHitChance) {
         scoreEarned *= criticalHitMultiplier;
         coinsEarned *= criticalHitMultiplier;
@@ -175,23 +175,25 @@ function handleTap(event) {
     }
 
     // Бонус монет
-    const coinBonusMultiplier = 1 + (coinBonusCount * 0.2);
+    const coinBonusMultiplier = 1 + (coinBonusCount * 0.02);
     coinsEarned *= coinBonusMultiplier;
 
     // Ускорение опыта
-    const xpBoostMultiplier = 1 + (xpBoostCount * 0.3);
+    const xpBoostMultiplier = 1 + (xpBoostCount * 0.03);
     xpEarned *= xpBoostMultiplier;
 
-    // Округляем значения до целых чисел
-    coinsEarned = Math.round(coinsEarned); // Округляем до ближайшего целого
-    xpEarned = Math.round(xpEarned); // Округляем до ближайшего целого
+    // Округляем значения
+    scoreEarned = Math.round(scoreEarned);
+    coinsEarned = Math.round(coinsEarned);
+    xpEarned = Math.round(xpEarned);
 
     // Обновляем значения
     updateScore(scoreEarned);
     updateCoins(coinsEarned);
     xp += xpEarned;
 
-    checkLevelUp();
+    // Проверяем повышение уровня
+    checkLevelUp(); // Вызов функции
 }
 
 // Устанавливаем обработчик клика
@@ -223,16 +225,26 @@ function getCurrentCharacter() {
 }
 
 function checkLevelUp() {
-    const neededXP = level * score_for_level;
-    if (xp >= neededXP) {
-        updateLevel()
+    let levelsGained = 0;
+
+    while (xp >= level * score_for_level) {
+        const neededXP = level * score_for_level;
         xp -= neededXP;
-        coins += coin_for_level;
-        showLevelUpPopup()
+
+        coins += level * coin_for_level;
+        levelsGained++;
+        const newCharacter = configCharacter.characters.find(character => character.entryLevel === level+levelsGained);
+        if (newCharacter) {
+            showNewCharacterPopup(newCharacter); // Показываем попап нового персонажа
+        }
+    }
+    if (levelsGained > 0) {
+        updateLevel(levelsGained)
+        showLevelUpPopup(levelsGained); // Показываем попап повышения уровня
         updateUI();
-        createLevelUpEffect();
     }
 }
+
 
 function showPopup(elementId, value) {
     const popup = document.getElementById(elementId);
@@ -255,10 +267,10 @@ function updateCoins(coinsAdded) {
     showPopup('coins-popup', coinsAdded);
 }
 
-function updateLevel() {
-    level++;
+function updateLevel(levelsGained) {
+    level += levelsGained
     levelElement.textContent = formatNumber(level);
-    showPopup('level-popup', 1);
+    showPopup('level-popup', levelsGained);
 }
 tapCircle.addEventListener('touchstart', (event) => {
     touchStartX = event.touches[0].clientX;
@@ -681,23 +693,6 @@ function createTapEffect(x, y) {
     setTimeout(() => effect.remove(), 1000);
 }
 
-function createUpgradeEffect(text, x, y) {
-    const effect = document.createElement('div');
-    effect.className = 'upgrade-effect';
-    effect.textContent = text;
-    effect.style.left = `${x}px`;
-    effect.style.top = `${y}px`;
-    document.body.appendChild(effect);
-    setTimeout(() => effect.remove(), 1000);
-}
-
-function createLevelUpEffect() {
-    const effect = document.createElement('div');
-    effect.className = 'level-up-effect';
-    effect.textContent = '🎉 Уровень UP!';
-    document.body.appendChild(effect);
-    setTimeout(() => effect.remove(), 1000);
-}
 
 function updateImage() {
     const character = getCurrentCharacter();
@@ -715,12 +710,14 @@ function updateImage() {
 
 function showNewCharacterPopup(character) {
     const popup = document.createElement('div');
-    popup.className = 'level-up-popup';
+    popup.className = 'new-character-popup';
     popup.innerHTML = `
         <h2>🎉 Новый персонаж!</h2>
         <p>${character.name}!</p>
     `;
     document.body.appendChild(popup);
+
+    setTimeout(() => popup.remove(), 3000);
 }
 
 
@@ -736,12 +733,13 @@ function getCharacterForLevel(currentLevel) {
     return unlockedCharacter;
 }
 
-function showLevelUpPopup() {
+function showLevelUpPopup(levelsGained) {
+    console.log('showLevelUpPopup вызвана'); // Логирование
     const popup = document.createElement('div');
     popup.className = 'level-up-popup';
     popup.innerHTML = `
         <h2>🎉 Уровень ${level}!</h2>
-        <p>+10 монет</p>
+        <p>+${formatNumber(level * coin_for_level)} монет</p>
     `;
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), 3000);
