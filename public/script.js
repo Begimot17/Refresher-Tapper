@@ -48,21 +48,21 @@ const configCharacter = {
         },
         {
             name: "Лёша",
-            entryLevel: 114,
+            entryLevel: 20,
             image: 'images/lesha_dyachkov.jpg',
             sound: 'sounds/default_2.mp3',
             description: "Душа компании, любит Ланос. Электрик"
         },
         {
             name: "Жека",
-            entryLevel: 200,
+            entryLevel: 50,
             image: 'images/jeka_isaenko.jpg',
             sound: 'sounds/default_2.mp3',
             description: "Душа компании, любит Подушки. Часовщик"
         },
         {
             name: "Саня",
-            entryLevel: 200,
+            entryLevel: 100,
             image: 'images/sasha_isaenko.jpg',
             sound: 'sounds/default_2.mp3',
             description: "Душа компании, любит CS GO. Камерщик"
