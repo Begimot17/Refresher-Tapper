@@ -11,7 +11,6 @@ let autoClickerCount = 0;
 let criticalHitCount = 0; // Уровень улучшения "Критический удар"
 let coinBonusCount = 0;   // Уровень улучшения "Бонус монет"
 let xpBoostCount = 0;
-let selectedCharacter = null;
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -26,6 +25,7 @@ const levelElement = document.getElementById('level');
 const configCharacter = {
     characters: [
         {
+            id: 1,
             name: "Богдан",
             entryLevel: 1,
             image: 'images/bogdan.jpg',
@@ -33,6 +33,7 @@ const configCharacter = {
             description: "Душа компании, любит Вейпы. Военный"
         },
         {
+            id: 2,
             name: "Глебаста",
             entryLevel: 5,
             image: 'images/glebasta.jpg',
@@ -40,6 +41,7 @@ const configCharacter = {
             description: "Душа компании, любит Короля и Шута. Моряк"
         },
         {
+            id: 3,
             name: "Любомир",
             entryLevel: 10,
             image: 'images/lubomir.jpg',
@@ -47,6 +49,7 @@ const configCharacter = {
             description: "Душа компании, любит Серьёзного Сема. Ветеран"
         },
         {
+            id: 4,
             name: "Лёша",
             entryLevel: 20,
             image: 'images/lesha_dyachkov.jpg',
@@ -54,6 +57,7 @@ const configCharacter = {
             description: "Душа компании, любит Ланос. Электрик"
         },
         {
+            id: 5,
             name: "Дима",
             entryLevel: 50,
             image: 'images/dima_brusko.jpg',
@@ -61,6 +65,7 @@ const configCharacter = {
             description: "Душа АЙТИ компании, любит Макбук. Программист"
         },
         {
+            id: 6,
             name: "Жека",
             entryLevel: 100,
             image: 'images/jeka_isaenko.jpg',
@@ -68,6 +73,7 @@ const configCharacter = {
             description: "Душа компании, любит Подушки. Часовщик"
         },
         {
+            id: 7,
             name: "Саня",
             entryLevel: 200,
             image: 'images/sasha_isaenko.jpg',
@@ -75,6 +81,7 @@ const configCharacter = {
             description: "Душа компании, любит CS GO. Камерщик"
         },
         {
+            id: 8,
             name: "Жума",
             entryLevel: 500,
             image: 'images/juma.jpg',
@@ -82,6 +89,7 @@ const configCharacter = {
             description: "Душа компании, любит Lays. Асперанто-Лаборанто"
         },
         {
+            id: 9,
             name: "Никита",
             entryLevel: 1000,
             image: 'images/nikita.jpg',
@@ -89,6 +97,7 @@ const configCharacter = {
             description: "Бог"
         },
         {
+            id: 10,
             name: "Дуля",
             entryLevel: 9999,
             image: 'images/dula.jpg',
@@ -153,6 +162,7 @@ const shopConfig = {
         },
     ],
 };
+selectedCharacter = configCharacter.characters.find(char => char.id === 1);
 const tapSound = document.getElementById('tap-sound');
 function handleTap(event) {
     tapSound.currentTime = 0;
@@ -581,7 +591,8 @@ function saveProgress() {
         autoClickerCount,
         criticalHitCount,
         coinBonusCount,
-        xpBoostCount
+        xpBoostCount,
+        selectedCharacter: selectedCharacter ? selectedCharacter.id : null // Сохраняем ID выбранного персонажа
     };
 
     localStorage.setItem('gameData', JSON.stringify(gameData));
@@ -602,7 +613,7 @@ function saveProgress() {
 
 function loadProgress() {
     const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-    if (userId) {
+    if (!userId) {
         $.ajax({
             url: '/api/load',
             method: 'POST',
@@ -623,6 +634,13 @@ function loadProgress() {
                     coinBonusCount = userData.coinBonusCount || 0;
                     xpBoostCount = userData.xpBoostCount || 0;
 
+                    if (userData.selectedCharacter) {
+                        selectedCharacter = configCharacter.characters.find(
+                            char => char.id === userData.selectedCharacter
+                        );
+                        selectCharacter(selectedCharacter);
+                    }
+
                     updateUI();
 
                     if (autoClickerCount > 0) {
@@ -634,6 +652,34 @@ function loadProgress() {
                 console.error('Ошибка загрузки с сервера:', error);
             }
         });
+    } else {
+        const savedData = localStorage.getItem('gameData');
+        if (savedData) {
+            const gameData = JSON.parse(savedData);
+            score = gameData.score || 0;
+            coins = gameData.coins || 0;
+            level = gameData.level || 1;
+            xp = gameData.xp || 0;
+            multiplier = gameData.multiplier || 1;
+            multiplierCount = gameData.multiplierCount || 0;
+            autoClickerCount = gameData.autoClickerCount || 0;
+            criticalHitCount = gameData.criticalHitCount || 0;
+            coinBonusCount = gameData.coinBonusCount || 0;
+            xpBoostCount = gameData.xpBoostCount || 0;
+
+            if (gameData.selectedCharacter) {
+                selectedCharacter = configCharacter.characters.find(
+                    char => char.id === gameData.selectedCharacter
+                );
+                selectCharacter(selectedCharacter);
+            }
+
+            updateUI();
+
+            if (autoClickerCount > 0) {
+                applyAutoClickerEffect();
+            }
+        }
     }
 
     updateImage();
@@ -827,6 +873,7 @@ function selectCharacter(character) {
     selectedCharacter = character; // Устанавливаем выбранного персонажа
     updateImage(); // Обновляем изображение
     closeCharacterModal(); // Закрываем модальное окно
+    saveProgress(); // Сохраняем прогресс после выбора персонажа
 }
 Telegram.WebApp.onEvent('viewportChanged', function(e) {
     if (!Telegram.WebApp.isExpanded) {

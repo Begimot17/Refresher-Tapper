@@ -23,6 +23,7 @@ services:
   server:
     build: ./server
     container_name: refresher_tapper_server
+    restart: always
     ports:
       - "3000:3000"
     volumes:
@@ -38,6 +39,7 @@ services:
   bot:
     build: ./bot
     container_name: refresher_tapper_bot
+    restart: always
     depends_on:
       - server
     environment:

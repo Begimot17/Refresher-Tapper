@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
     criticalHitCount: { type: Number, default: 0 },
     coinBonusCount: { type: Number, default: 0 },
     xpBoostCount: { type: Number, default: 0 },
+    selectedCharacter: { type: Number, default: null },
 });
 
 const User = mongoose.model('User', userSchema);
@@ -47,12 +48,12 @@ app.use((req, res, next) => {
 });
 
 app.post('/api/save', async (req, res) => {
-    const { userId, username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount } = req.body;
+    const { userId, username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount, selectedCharacter } = req.body;
 
     try {
         const user = await User.findOneAndUpdate(
             { userId },
-            { username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount },
+            { username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount, selectedCharacter },
             { upsert: true, new: true }
         );
         res.status(200).json({ message: 'Данные сохранены', user });
