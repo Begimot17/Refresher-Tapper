@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     score: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
+    xp: { type: Number, default: 0 },
     multiplierCount: { type: Number, default: 0 }, // Количество купленных множителей
     autoClickerCount: { type: Number, default: 0 }, // Количество купленных автокликеров
     criticalHitCount: { type: Number, default: 0 },
@@ -51,7 +52,7 @@ app.post('/api/save', async (req, res) => {
     try {
         const user = await User.findOneAndUpdate(
             { userId },
-            { username, score, coins, level, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount },
+            { username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount },
             { upsert: true, new: true }
         );
         res.status(200).json({ message: 'Данные сохранены', user });
@@ -60,6 +61,33 @@ app.post('/api/save', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+app.post('/api/load', async (req, res) => {
+    console.log('📥 Запрос на загрузку:', req.body); // Лог запроса
+
+    const { userId } = req.body;
+
+    if (!userId) {
+        console.warn('⚠️ Не указан userId');
+        return res.status(400).json({ message: 'Не указан userId' });
+    }
+
+    try {
+        let user = await User.findOne({ userId }).select('-_id -__v');
+        console.log('🔎 Найден пользователь:', user);
+
+        if (!user) {
+            console.warn('⚠️ Пользователь не найден, создаем нового');
+            user = new User({ userId, username: `User_${userId}` });
+            await user.save();
+        }
+
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error('❌ Ошибка при загрузке данных:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 
 app.get('/api/leaderboard', async (req, res) => {
     try {

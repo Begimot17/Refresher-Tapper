@@ -602,53 +602,40 @@ function saveProgress() {
 }
 
 function loadProgress() {
-    const localData = localStorage.getItem('gameData');
-    if (localData) {
-        try {
-            const data = JSON.parse(localData);
-            score = data.score || 0;
-            coins = data.coins || 0;
-            level = data.level || 1;
-            xp = data.xp || 0;
-            multiplier = data.multiplier || 1;
-            multiplierCount = data.multiplierCount || 0;
-            autoClickerCount = data.autoClickerCount || 0;
-            criticalHitCount = data.criticalHitCount || 0;
-            coinBonusCount = data.coinBonusCount || 0;
-            xpBoostCount = data.xpBoostCount || 0;
-            updateUI();
+    const userId = Telegram.WebApp.initDataUnsafe.user?.id;
+    if (userId) {
+        $.ajax({
+            url: '/api/load',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ userId }),
+            dataType: 'json',
+            success: function(data) {
+                if (data && data.user) {
+                    const userData = data.user;
+                    score = userData.score || 0;
+                    coins = userData.coins || 0;
+                    level = userData.level || 1;
+                    xp = userData.xp || 0;
+                    multiplier = userData.multiplier || 1;
+                    multiplierCount = userData.multiplierCount || 0;
+                    autoClickerCount = userData.autoClickerCount || 0;
+                    criticalHitCount = userData.criticalHitCount || 0;
+                    coinBonusCount = userData.coinBonusCount || 0;
+                    xpBoostCount = userData.xpBoostCount || 0;
 
-            // Активируем автокликер при загрузке
-            if (autoClickerCount > 0) {
-                applyAutoClickerEffect();
+                    updateUI();
+
+                    if (autoClickerCount > 0) {
+                        applyAutoClickerEffect();
+                    }
+                }
+            },
+            error: function(error) {
+                console.error('Ошибка загрузки с сервера:', error);
             }
-        } catch (e) {
-            console.error('Ошибка загрузки из localStorage:', e);
-        }
+        });
     }
-
-    // const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-    // if (userId) {
-    //     $.ajax({
-    //         url: `/api/load?userId=${userId}`,
-    //         method: 'GET',
-    //         dataType: 'json',
-    //         success: function(data) {
-    //             if (data) {
-    //                 autoClickerCount = data.autoClickerCount || autoClickerCount;
-    //                 updateUI();
-    //
-    //                 // Активируем автокликер после загрузки с сервера
-    //                 if (data.autoClickerCount > 0) {
-    //                     applyAutoClickerEffect();
-    //                 }
-    //             }
-    //         },
-    //         error: function(error) {
-    //             console.error('Ошибка загрузки с сервера:', error);
-    //         }
-    //     });
-    // }
 
     updateImage();
 }
