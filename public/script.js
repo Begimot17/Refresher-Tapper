@@ -467,7 +467,6 @@ function renderShop() {
         upgradeElement.html(`
             <div class="upgrade-header">
                 ${upgrade.icon} ${upgrade.name}
-                ${isMaxLevel ? '<span class="max-level">MAX</span>' : '<button class="btn buy-btn">Купить</button>'}
             </div>
             <div class="upgrade-details">
                 Цена: <span class="upgrade-cost">${isMaxLevel ? '—' : formatNumber(cost)}</span> 🪙
@@ -829,6 +828,15 @@ function selectCharacter(character) {
     updateImage(); // Обновляем изображение
     closeCharacterModal(); // Закрываем модальное окно
 }
+Telegram.WebApp.onEvent('viewportChanged', function(e) {
+    if (!Telegram.WebApp.isExpanded) {
+        saveProgress();
+    }
+});
 
+// Дополнительный обработчик для браузеров/других случаев
+window.addEventListener('beforeunload', function(e) {
+    saveProgress();
+});
 loadProgress();
 updateImage();

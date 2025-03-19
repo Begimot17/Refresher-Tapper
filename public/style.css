@@ -45,15 +45,19 @@ h1 {
 /* Стили для score-board */
 .score-board {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 20px 0;
+    justify-content: space-between; /* Равномерное распределение пространства между элементами */
+    gap: 10px; /* Расстояние между элементами */
+    margin: 20px auto; /* Центрируем по горизонтали */
     font-size: 24px;
     background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
+    padding: 15px; /* Внутренний отступ для всего контейнера */
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 90%; /* Фиксированная ширина 90% */
+    max-width: 100%; /* Ограничиваем максимальную ширину */
+    box-sizing: border-box; /* Учитываем padding в ширине */
 }
+
 .score-item {
     position: relative;
     cursor: pointer;
@@ -62,6 +66,11 @@ h1 {
     color: #fff;
     border-radius: 5px;
     transition: background-color 0.3s ease;
+    flex: 1; /* Равномерное распределение пространства */
+    text-align: center; /* Центрируем текст внутри каждого элемента */
+    min-width: 0; /* Предотвращаем растягивание содержимого */
+    white-space: nowrap; /* Запрещаем перенос текста на новую строку */
+    overflow: hidden; /* Скрываем текст, который не влезает */
 }
 
 .tooltip {
@@ -438,80 +447,77 @@ h1 {
     display: flex;
     flex-direction: column;
 }
-
-/* Стили для списка персонажей */
+/* Стили для контейнеров списков */
 .upgrades-list, .character-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto; /* Добавляем вертикальный скролл */
-    padding-right: 10px; /* Отступ для скролла */
-    margin-top: 10px; /* Отступ сверху */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+    gap: 15px; /* Расстояние между элементами */
+    padding: 10px;
+    overflow-y: auto; /* Скролл при необходимости */
 }
 
-/* Стили для элемента персонажа */
+/* Стили для элементов */
 .upgrade-item, .character-item {
     background: #2c3e50;
-    padding: 15px;
     border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    padding: 15px;
+    aspect-ratio: 1; /* Квадратные ячейки */
+    min-width: 0; /* Фикс обрезки контента */
+}
+
+/* Адаптация под мобильные устройства */
+@media (max-width: 768px) {
+    .upgrades-list, .character-list {
+        grid-template-columns: repeat(2, 1fr); /* 2 колонки на мобилах */
+    }
 }
 
 .upgrade-item:hover, .character-item:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
 }
 
+/* Стили для изображений */
 .upgrade-item img, .character-item img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+    width: 100%; /* Занимает всю ширину контейнера */
+    height: 80%; /* 80% высоты элемента */
     object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
 }
 
+/* Блокировка затемнения */
+.locked-character {
+    background-color: rgba(0, 0, 0, 0.7);
+    position: relative;
+}
+
+/* Текст под изображением */
 .upgrade-item span, .character-item span {
-    font-size: 18px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 16px;
     font-weight: bold;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Стили для скролла */
+/* Стилизация скролла */
 .upgrades-list::-webkit-scrollbar, .character-list::-webkit-scrollbar {
-    width: 8px; /* Ширина скролла */
-}
-
-.upgrades-list::-webkit-scrollbar-track, .character-list::-webkit-scrollbar-track {
-    background: #2c3e50; /* Цвет трека */
-    border-radius: 4px;
+    width: 6px;
+    height: 6px;
 }
 
 .upgrades-list::-webkit-scrollbar-thumb, .character-list::-webkit-scrollbar-thumb {
-    background: #3498db; /* Цвет ползунка */
-    border-radius: 4px;
-}
-
-.upgrades-list::-webkit-scrollbar-thumb:hover, .character-list::-webkit-scrollbar-thumb:hover {
-    background: #2980b9; /* Цвет ползунка при наведении */
-}
-
-.upgrade-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px;
-}
-
-.upgrade-item img, .character-item img, .locked-character {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-}
-
-.locked-character {
-    background-color: black;
+    background: #3498db;
+    border-radius: 3px;
 }
 
 .next-unlock {

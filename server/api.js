@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 });
 
 app.post('/api/save', async (req, res) => {
-    const { userId, username, score, coins, level, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount } = req.body;
+    const { userId, username, score, coins, level, xp, multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount, xpBoostCount } = req.body;
 
     try {
         const user = await User.findOneAndUpdate(
