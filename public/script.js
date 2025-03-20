@@ -688,13 +688,13 @@ function loadProgress() {
 
 function formatNumber(number) {
     if (number >= 1e12) { // Триллионы
-        return (number / 1e12).toFixed(3) + 'T';
+        return (number / 1e12).toFixed(2) + 'T';
     } else if (number >= 1e9) { // Миллиарды
-        return (number / 1e9).toFixed(3) + 'B';
+        return (number / 1e9).toFixed(2) + 'B';
     } else if (number >= 1e6) { // Миллионы
-        return (number / 1e6).toFixed(3) + 'M';
+        return (number / 1e6).toFixed(2) + 'M';
     } else if (number >= 1e3) { // Тысячи
-        return (number / 1e3).toFixed(3) + 'K';
+        return (number / 1e3).toFixed(2) + 'K';
     } else {
         return number.toString(); // Меньше 1000
     }
