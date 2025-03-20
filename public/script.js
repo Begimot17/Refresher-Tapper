@@ -613,7 +613,7 @@ function saveProgress() {
 
 function loadProgress() {
     const userId = Telegram.WebApp.initDataUnsafe.user?.id;
-    if (!userId) {
+    if (userId) {
         $.ajax({
             url: '/api/load',
             method: 'POST',
