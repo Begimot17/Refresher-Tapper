@@ -386,6 +386,7 @@ function increaseUpgradeLevel(upgradeId) {
   // Увеличивает уровень улучшения
   switch (upgradeId) {
     case 'multiplier':
+      multiplier += 1
       multiplierCount += 1
       break
     case 'auto-click':
@@ -406,28 +407,19 @@ function increaseUpgradeLevel(upgradeId) {
 function applyUpgradeEffect(effectType) {
   switch (effectType) {
     case 'multiplier':
-      applyMultiplierEffect()
       break
     case 'autoClicker':
       applyAutoClickerEffect()
       break
     case 'criticalHit':
-      applyCriticalHitEffect()
       break
     case 'coinBonus':
-      applyCoinBonusEffect()
       break
     case 'xpBoost':
-      applyXpBoostEffect()
       break
     default:
       console.error('Неизвестный тип улучшения:', effectType)
   }
-}
-
-function applyMultiplierEffect() {
-  multiplier += 1 // Увеличиваем множитель на 1
-  console.log(`Множитель увеличен! Текущий множитель: ${multiplier}`)
 }
 
 function applyAutoClickerEffect() {
@@ -445,20 +437,6 @@ function applyAutoClickerEffect() {
     }, 1000)
     console.log('Автокликер активирован!')
   }
-}
-
-function applyCriticalHitEffect() {
-  console.log(
-    `Критический удар улучшен! Шанс: ${(0.1 + criticalHitCount * 0.05) * 100}%, Множитель: x${2 + criticalHitCount * 0.5}`
-  )
-}
-
-function applyCoinBonusEffect() {
-  console.log(`Бонус монет улучшен! Множитель монет: x${1 + coinBonusCount * 0.2}`)
-}
-
-function applyXpBoostEffect() {
-  console.log(`Ускорение опыта улучшено! Множитель опыта: x${1 + xpBoostCount * 0.3}`)
 }
 
 function createCriticalHitEffect(x, y) {
@@ -489,7 +467,6 @@ function renderShop() {
       click: () => buyUpgrade(upgrade.id) // Обработчик клика
     })
 
-    // Заполняем содержимое элемента
     upgradeElement.html(`
             <div class="upgrade-header">
                 ${upgrade.icon} ${upgrade.name}

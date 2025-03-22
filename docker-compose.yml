@@ -27,11 +27,14 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./public:/server/public
+      - ./server:/server  # Монтируем всю папку server
+      - /server/node_modules  # Исключаем node_modules из монтирования
     depends_on:
       mongo:
         condition: service_healthy
     environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--experimental-vm-modules
       - MONGO_URI=${MONGO_URI}
     networks:
       - refresher_tapper_network
@@ -40,6 +43,8 @@ services:
     build: ./bot
     container_name: refresher_tapper_bot
     restart: always
+    volumes:
+      - ./bot:/bot  # Монтируем всю папку bot
     depends_on:
       - server
     environment:
