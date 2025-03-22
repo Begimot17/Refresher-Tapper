@@ -240,7 +240,7 @@ scoreItems.forEach((item) => {
   });
 });
 function closeShop() {
-  document.getElementById('shop-modal').style.display = 'none';
+  $('#shop-modal').hide();
 }
 
 function getCurrentCharacter() {
@@ -274,12 +274,12 @@ function checkLevelUp() {
 }
 
 function showPopup(elementId, value) {
-  const popup = document.getElementById(elementId);
-  popup.textContent = `+${formatNumber(value)}`;
-  popup.classList.add('show');
-  setTimeout(() => {
-    popup.classList.remove('show');
-  }, 2000);
+  const popup = $(`#${elementId}`);
+  popup
+    .text(`+${formatNumber(value)}`)
+    .addClass('show')
+    .delay(2000)
+    .queue(() => popup.removeClass('show').dequeue());
 }
 
 function updateScore(points) {
@@ -516,7 +516,7 @@ function renderShop() {
 
 function openShop() {
   renderShop();
-  document.getElementById('shop-modal').style.display = 'block'; // Показываем модальное окно
+  $('#shop-modal').show();
 }
 
 function showLeaderboard() {
@@ -737,6 +737,10 @@ function updateUI() {
     if (upgradeElement.length) {
       upgradeElement.find('.upgrade-cost').text(formatNumber(cost));
       upgradeElement.find('.upgrade-level').text(currentLevel);
+
+      if (currentLevel >= upgrade.maxLevel) {
+        upgradeElement.addClass('max-level').off('click');
+      }
     }
   });
 }
@@ -752,28 +756,18 @@ function createTapEffect(x, y) {
 
 function updateImage() {
   const character = getCurrentCharacter();
-  const tapImage = document.getElementById('tap-image');
-  const tapSound = document.getElementById('tap-sound');
-
-  tapImage.src = character.image;
-  tapSound.src = character.sound;
-
-  // Обновляем описание, если кружок перевернут
-  if (tapCircle.classList.contains('flipped')) {
-    updateCharacterDescription();
-  }
+  $('#tap-image').attr('src', character.image);
+  $('#tap-sound').attr('src', character.sound);
+  if ($('#tap-circle').hasClass('flipped')) updateCharacterDescription();
 }
 
 function showNewCharacterPopup(character) {
-  const popup = document.createElement('div');
-  popup.className = 'new-character-popup';
-  popup.innerHTML = `
-        <h2>🎉 Новый персонаж!</h2>
-        <p>${character.name}!</p>
-    `;
-  document.body.appendChild(popup);
-
-  setTimeout(() => popup.remove(), 3000);
+  $('<div>')
+    .addClass('new-character-popup')
+    .html(`<h2>🎉 Новый персонаж!</h2><p>${character.name}!</p>`)
+    .appendTo('body')
+    .delay(3000)
+    .fadeOut(() => $(this).remove());
 }
 
 function getCharacterForLevel(currentLevel) {
@@ -844,48 +838,36 @@ function shareProgress() {
 }
 
 function openCharacterModal() {
-  const characterList = document.getElementById('character-list');
-  characterList.innerHTML = '';
-
   const nextUnlockLevel = configCharacter.characters
-    .map((character) => character.entryLevel)
-    .filter((lvl) => lvl > level)
-    .sort((a, b) => a - b)[0];
+    .filter((c) => c.entryLevel > level)
+    .sort((a, b) => a.entryLevel - b.entryLevel)[0]?.entryLevel;
 
-  configCharacter.characters.forEach((character) => {
-    const characterItem = document.createElement('div');
-    characterItem.className = 'character-item';
+  $('#character-list')
+    .empty()
+    .append(
+      configCharacter.characters.map((character) =>
+        $('<div>')
+          .addClass('character-item')
+          .toggleClass('locked', character.entryLevel > level)
+          .html(
+            character.entryLevel <= level
+              ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span>`
+              : `<div class="locked-character"></div><span>???</span><small>Откроется на уровне ${character.entryLevel}</small>`
+          )
+          .on(
+            'click',
+            () => character.entryLevel <= level && selectCharacter(character)
+          )
+      )
+    );
 
-    if (character.entryLevel <= level) {
-      characterItem.innerHTML = `
-                <img src="${character.image}" alt="${character.name}">
-                <span>${character.name}</span>
-            `;
-      characterItem.onclick = () => selectCharacter(character);
-    } else {
-      characterItem.innerHTML = `
-                <div class="locked-character"></div>
-                <span>???</span>
-                <small>Откроется на уровне ${character.entryLevel}</small>
-            `;
-    }
+  $('#next-unlock-info').text(
+    nextUnlockLevel
+      ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
+      : 'Все персонажи открыты'
+  );
 
-    characterList.appendChild(characterItem);
-  });
-
-  let nextUnlockInfo = document.getElementById('next-unlock-info');
-  if (!nextUnlockInfo) {
-    nextUnlockInfo = document.createElement('div');
-    nextUnlockInfo.id = 'next-unlock-info';
-    nextUnlockInfo.className = 'next-unlock';
-    document.getElementById('character-modal').appendChild(nextUnlockInfo);
-  }
-
-  nextUnlockInfo.textContent = nextUnlockLevel
-    ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
-    : 'Все персонажи открыты';
-
-  document.getElementById('character-modal').style.display = 'block';
+  $('#character-modal').show();
 }
 
 function closeCharacterModal() {
@@ -904,7 +886,6 @@ Telegram.WebApp.onEvent('viewportChanged', function (e) {
   }
 });
 
-// Дополнительный обработчик для браузеров/других случаев
 window.addEventListener('beforeunload', function (e) {
   saveProgress();
 });
