@@ -1,84 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Refresher Tapper</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="game-container">
-    <h1 id="main-title">🔥Refresher Tapper🔥</h1>
-    <div class="score-board">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <h1 id="main-title">🔥Refresher Tapper🔥</h1>
+      <div class="score-board">
         <div class="score-item">
-            🔥 <span id="score">0</span>
-            <span id="score-popup" class="popup"></span>
-            <span class="tooltip">Очки: Ваш текущий счёт</span>
+          🔥 <span id="score">0</span>
+          <span id="score-popup" class="popup"></span>
+          <span class="tooltip">Очки: Ваш текущий счёт</span>
         </div>
         <div class="score-item">
-            🪙 <span id="coins">0</span>
-            <span id="coins-popup" class="popup"></span>
-            <span class="tooltip">Монеты: Валюта для улучшений</span>
+          🪙 <span id="coins">0</span>
+          <span id="coins-popup" class="popup"></span>
+          <span class="tooltip">Монеты: Валюта для улучшений</span>
         </div>
         <div class="score-item">
-            📈 <span id="level">1</span>
-            <span id="level-popup" class="popup"></span>
-            <span class="tooltip">Уровень: Ваш прогресс</span>
+          📈 <span id="level">1</span>
+          <span id="level-popup" class="popup"></span>
+          <span class="tooltip">Уровень: Ваш прогресс</span>
         </div>
-    </div>
+      </div>
 
-    <div id="tap-circle">
+      <div id="tap-circle">
         <div class="circle-front">
-            <img id="tap-image" src="images/bogdan.jpg" alt="Character">
+          <img id="tap-image" alt="Character" />
         </div>
         <div class="circle-back">
-            <p id="character-description">Описание героя...</p>
+          <p id="character-description">Описание героя...</p>
         </div>
+      </div>
+
+      <div class="shop">
+        <div class="button-row">
+          <button class="btn" onclick="openShop()">Магазин 🛒</button>
+          <button class="btn" onclick="openCharacterModal()">
+            Выбрать персонажа 🎭
+          </button>
+        </div>
+        <div class="button-row">
+          <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
+          <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+        </div>
+      </div>
     </div>
 
-    <div class="shop">
-        <div class="button-row">
-            <button class="btn" onclick="openShop()">Магазин 🛒</button>
-            <button class="btn" onclick="openCharacterModal()">Выбрать персонажа 🎭</button>
-        </div>
-        <div class="button-row">
-            <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
-            <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
-        </div>
-    </div>
-</div>
-
-<div id="shop-modal" class="modal">
-    <div class="modal-content">
+    <div id="shop-modal" class="modal">
+      <div class="modal-content">
         <span class="close" onclick="closeShop()">&times;</span>
         <h2>🛒 Магазин улучшений</h2>
         <div id="upgrades-list" class="upgrades-list"></div>
+      </div>
     </div>
-</div>
-<div id="character-modal" class="modal">
-    <div class="modal-content">
+    <div id="character-modal" class="modal">
+      <div class="modal-content">
         <span class="close" onclick="closeCharacterModal()">&times;</span>
         <h2>Выберите персонажа</h2>
         <div id="character-list" class="character-list"></div>
+      </div>
     </div>
-</div>
-<div id="leaderboard-modal" class="modal">
-    <div class="modal-content">
+    <div id="leaderboard-modal" class="modal">
+      <div class="modal-content">
         <span class="close" onclick="closeLeaderboard()">&times;</span>
         <h2>🏆 Таблица рекордов</h2>
         <ul id="leaderboard-list" class="leaderboard-list"></ul>
+      </div>
     </div>
-</div>
-<div id="error-message"
-     style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff4444; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000;">
-</div>
+    <div
+      id="error-message"
+      style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4444;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+      "
+    ></div>
 
-<audio id="tap-sound" src="sounds/lubomir.mp3"></audio>
+    <audio id="tap-sound" src="sounds/lubomir.mp3"></audio>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="script.js"></script>
-</body>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>
