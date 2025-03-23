@@ -196,19 +196,7 @@ function handleTap(event) {
     xpEarned *= criticalHitMultiplier
     createCriticalHitEffect(event.clientX, event.clientY)
   }
-  if (selectedCharacter?.animationDuration) {
-    const img = document.getElementById('tap-image')
-    const originalSrc = selectedCharacter.image
 
-    // Перезагружаем гифку для запуска анимации
-    img.src = `${originalSrc}?${Date.now()}`
-
-    // Возвращаем исходное состояние после завершения анимации
-    setTimeout(() => {
-      img.src = originalSrc
-    }, selectedCharacter.animationDuration)
-  }
-  // Бонус монет
   const coinBonusMultiplier = 1 + coinBonusCount * 0.02
   coinsEarned *= coinBonusMultiplier
 

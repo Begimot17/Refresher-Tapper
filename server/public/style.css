@@ -186,14 +186,6 @@ h1 {
   object-fit: cover; /* Сохраняем пропорции */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Тень для изображения */
 }
-#tap-image {
-  transition: opacity 0.3s ease;
-}
-
-#tap-image.animating {
-  opacity: 0.9;
-}
-/* Эффекты при нажатии */
 #tap-circle:active {
   transform: scale(0.95);
   transition: transform 0.1s ease;
