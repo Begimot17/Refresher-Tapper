@@ -800,5 +800,23 @@ function selectCharacter(character) {
   closeCharacterModal()
   saveProgress()
 }
+$(document).ready(function () {
+  // Открываем модальное окно меню
+  $('#menu-button').on('click', function () {
+    $('#menu-modal').show()
+  })
+
+  // Закрываем модальное окно меню
+  $('.close').on('click', function () {
+    $('#menu-modal').hide()
+  })
+
+  // Закрываем модальное окно при клике вне его
+  $(window).on('click', function (event) {
+    if ($(event.target).hasClass('modal')) {
+      $('#menu-modal').hide()
+    }
+  })
+})
 loadProgress()
 updateImage()

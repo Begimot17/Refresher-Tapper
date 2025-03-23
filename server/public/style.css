@@ -613,3 +613,51 @@ h1 {
   border-radius: 5px;
   z-index: 1000;
 }
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Стили для выпадающего меню */
+.dropdown-content {
+  display: none; /* Скрываем меню по умолчанию */
+  position: absolute;
+  right: 0;
+  background-color: #2c3e50; /* Цвет фона */
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Стили для элементов меню */
+.dropdown-item {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #34495e; /* Цвет фона при наведении */
+}
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Расстояние между кнопками */
+  padding: 20px;
+}
+
+.menu-options .btn {
+  width: 100%; /* Кнопки на всю ширину */
+  justify-content: center; /* Центрируем текст */
+}

@@ -16,7 +16,7 @@
   </head>
   <body>
     <div class="game-container">
-      <h1 id="main-title">🔥Refresher Tapper🔥</h1>
+      <h1 id="main-title">🔥 Refresher Tapper 🔥</h1>
       <div class="score-board">
         <div class="score-item">
           🔥 <span id="score">0</span>
@@ -46,16 +46,29 @@
 
       <div class="shop">
         <div class="button-row">
-          <button class="btn" onclick="openShop()">Магазин 🛒</button>
-          <button class="btn" onclick="openCharacterModal()">Выбрать персонажа 🎭</button>
+          <button class="btn" onclick="openShop()">🛒 Магазин</button>
+          <button class="btn" onclick="openCharacterModal()">🎭 Выбрать персонажа</button>
         </div>
         <div class="button-row">
-          <button class="btn" onclick="showLeaderboard()">Рекорды 🏆</button>
-          <button class="btn" onclick="shareProgress()">Поделиться 📤</button>
+          <button class="btn" onclick="showLeaderboard()">🏆 Рекорды</button>
+          <!-- Кнопка для открытия меню -->
+          <button class="btn" id="menu-button">🍔 Меню</button>
         </div>
       </div>
     </div>
 
+    <!-- Модальное окно для меню -->
+    <div id="menu-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeMenuModal()">&times;</span>
+        <h2>🍔 Меню</h2>
+        <div class="menu-options">
+          <button class="btn" onclick="shareProgress()">📤 Поделиться</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Остальные модальные окна -->
     <div id="shop-modal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeShop()">&times;</span>
@@ -66,7 +79,7 @@
     <div id="character-modal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeCharacterModal()">&times;</span>
-        <h2>Выберите персонажа</h2>
+        <h2>🎭 Выберите персонажа</h2>
         <div id="character-list" class="character-list"></div>
       </div>
     </div>
