@@ -236,6 +236,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px; /* Расстояние между иконкой и текстом */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Эффекты при наведении */
