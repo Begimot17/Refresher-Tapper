@@ -174,47 +174,37 @@ const shopConfig = {
   ]
 }
 let selectedCharacter = configCharacter.characters.find(char => char.id === 1)
-const tapSound = document.getElementById('tap-sound')
+const $tapSound = $('#tap-sound')[0];
+const baseCriticalHitChance = 0.1;
+const baseCriticalHitMultiplier = 2;
+const baseCoinBonusMultiplier = 1;
 function handleTap(event) {
-  tapSound.currentTime = 0
-  tapSound.play()
-  createTapEffect(event.clientX, event.clientY)
+  $tapSound.currentTime = 0;
+  $tapSound.play();
+  createTapEffect(event.clientX, event.clientY);
 
-  // Базовые значения
-  let scoreEarned = multiplier
-  let coinsEarned = multiplier
-  let xpEarned = multiplier
+  let scoreEarned = multiplier;
+  let coinsEarned = multiplier;
 
   // Критический удар
-  const criticalHitChance = 0.1 + criticalHitCount * 0.002
-  const criticalHitMultiplier = 2 + criticalHitCount * 0.02
-  if (Math.random() < criticalHitChance) {
-    scoreEarned *= criticalHitMultiplier
-    coinsEarned *= criticalHitMultiplier
-    xpEarned *= criticalHitMultiplier
-    createCriticalHitEffect(event.clientX, event.clientY)
+  if (Math.random() < baseCriticalHitChance + criticalHitCount * 0.002) {
+    const criticalMultiplier = baseCriticalHitMultiplier + criticalHitCount * 0.02;
+    scoreEarned *= criticalMultiplier;
+    coinsEarned *= criticalMultiplier;
+    createCriticalHitEffect(event.clientX, event.clientY);
   }
 
-  const coinBonusMultiplier = 1 + coinBonusCount * 0.02
-  coinsEarned *= coinBonusMultiplier
+  // Бонус монет и XP
+  coinsEarned *= baseCoinBonusMultiplier + coinBonusCount * 0.02;
 
-  // Ускорение опыта
-  const xpBoostMultiplier = 1 + xpBoostCount * 0.03
-  xpEarned *= xpBoostMultiplier
+  // Округление и обновление
+  updateScore(Math.round(scoreEarned));
+  updateCoins(Math.round(coinsEarned));
 
-  // Округляем значения
-  scoreEarned = Math.round(scoreEarned)
-  coinsEarned = Math.round(coinsEarned)
-  xpEarned = Math.round(xpEarned)
-
-  // Обновляем значения
-  updateScore(scoreEarned)
-  updateCoins(coinsEarned)
-  xp += xpEarned
-
-  // Проверяем повышение уровня
-  checkLevelUp() // Вызов функции
+  checkLevelUp();
 }
+
+$('#tap-circle').on('click', handleTap);
 
 // Устанавливаем обработчик клика
 tapCircle.addEventListener('click', handleTap)
@@ -245,53 +235,52 @@ function getCurrentCharacter() {
 }
 
 function checkLevelUp() {
-  let levelsGained = 0
-
-  while (xp >= level * score_for_level) {
-    const neededXP = level * score_for_level
-    xp -= neededXP
-
-    coins += level * coin_for_level
-    levelsGained++
-    const newCharacter = configCharacter.characters.find(
-      character => character.entryLevel === level + levelsGained
-    )
-    if (newCharacter) {
-      showNewCharacterPopup(newCharacter) // Показываем попап нового персонажа
-    }
-  }
+  const levelsGained = Math.floor(xp / (level * score_for_level));
   if (levelsGained > 0) {
-    updateLevel(levelsGained)
-    showLevelUpPopup()
-    updateUI()
+    const totalXPNeeded = level * score_for_level * levelsGained;
+    xp -= totalXPNeeded;
+    coins += level * coin_for_level * levelsGained;
+
+    const newLevel = level + levelsGained;
+    const newCharacter = configCharacter.characters.find(
+      character => character.entryLevel === newLevel
+    );
+    if (newCharacter) {
+      showNewCharacterPopup(newCharacter);
+    }
+
+    updateLevel(levelsGained);
+    showLevelUpPopup();
+    updateUI();
   }
 }
 
 function showPopup(elementId, value) {
-  const popup = $(`#${elementId}`)
-  popup
+  const $popup = $(`#${elementId}`);
+  $popup
     .text(`+${formatNumber(value)}`)
     .addClass('show')
     .delay(2000)
-    .queue(() => popup.removeClass('show').dequeue())
+    .queue(() => $popup.removeClass('show').dequeue());
 }
 
 function updateScore(points) {
-  score += points
-  scoreElement.textContent = formatNumber(score)
-  showPopup('score-popup', points)
+  xp += points;
+  score += points;
+  $('#score').text(formatNumber(score));
+  showPopup('score-popup', points);
 }
 
 function updateCoins(coinsAdded) {
-  coins += coinsAdded
-  coinsElement.textContent = formatNumber(coins)
-  showPopup('coins-popup', coinsAdded)
+  coins += coinsAdded;
+  $('#coins').text(formatNumber(coins));
+  showPopup('coins-popup', coinsAdded);
 }
 
 function updateLevel(levelsGained) {
-  level += levelsGained
-  levelElement.textContent = formatNumber(level)
-  showPopup('level-popup', levelsGained)
+  level += levelsGained;
+  $('#level').text(formatNumber(level));
+  showPopup('level-popup', levelsGained);
 }
 tapCircle.addEventListener('touchstart', event => {
   touchStartX = event.touches[0].clientX
@@ -422,92 +411,72 @@ function applyAutoClickerEffect() {
   if (!autoClickerActive) {
     autoClickerActive = true
     setInterval(() => {
-      let autoMultiplier = multiplier+autoClickerCount
-      score += autoMultiplier
-      coins += autoMultiplier
-      xp += autoMultiplier
-
-      updateScore(autoMultiplier)
-      updateCoins(autoMultiplier)
+      updateScore(multiplier+autoClickerCount)
+      updateCoins(multiplier+autoClickerCount)
       checkLevelUp()
       updateUI()
     }, 1000)
-    console.log('Автокликер активирован!')
   }
 }
-
 function createCriticalHitEffect(x, y) {
-  const effect = document.createElement('div')
-  effect.className = 'critical-hit-effect'
-  effect.textContent = '💥 Критический удар!'
-  effect.style.left = `${x}px`
-  effect.style.top = `${y}px`
-  document.body.appendChild(effect)
-  setTimeout(() => effect.remove(), 1000)
+  const $effect = $('<div>').addClass('critical-hit-effect').text('💥 Критический удар!').css({ left: `${x}px`, top: `${y}px` });
+  $('body').append($effect);
+  setTimeout(() => $effect.remove(), 1000);
 }
 
 function renderShop() {
-  const upgradesList = $('#upgrades-list')
-  upgradesList.empty() // Очищаем список улучшений
+  const $upgradesList = $('#upgrades-list');
+  $upgradesList.empty();
 
   shopConfig.upgrades.forEach(upgrade => {
-    const currentLevel = getUpgradeLevel(upgrade.id)
-    const cost = upgrade.baseCost + currentLevel * upgrade.costIncrease
+    const currentLevel = getUpgradeLevel(upgrade.id);
+    const cost = upgrade.baseCost + currentLevel * upgrade.costIncrease;
+    const isMaxLevel = currentLevel >= upgrade.maxLevel;
 
-    // Проверяем, достигнут ли максимальный уровень
-    const isMaxLevel = currentLevel >= upgrade.maxLevel
+    const $upgradeElement = $('<div>').addClass('upgrade').attr('data-id', upgrade.id).click(() => buyUpgrade(upgrade.id));
 
-    // Создаем элемент улучшения
-    const upgradeElement = $('<div>', {
-      class: 'upgrade',
-      'data-id': upgrade.id,
-      click: () => buyUpgrade(upgrade.id) // Обработчик клика
-    })
+    $upgradeElement.html(`
+      <div class="upgrade-header">
+        ${upgrade.icon} ${upgrade.name}
+      </div>
+      <div class="upgrade-details">
+        Цена: <span class="upgrade-cost">${isMaxLevel ? '—' : formatNumber(cost)}</span> 🪙
+        <br>
+        Уровень: <span class="upgrade-level">${currentLevel}</span> / ${upgrade.maxLevel}
+        <br>
+        <small>${upgrade.description}</small>
+      </div>
+    `);
 
-    upgradeElement.html(`
-            <div class="upgrade-header">
-                ${upgrade.icon} ${upgrade.name}
-            </div>
-            <div class="upgrade-details">
-                Цена: <span class="upgrade-cost">${isMaxLevel ? '—' : formatNumber(cost)}</span> 🪙
-                <br>
-                Уровень: <span class="upgrade-level">${currentLevel}</span> / ${upgrade.maxLevel}
-                <br>
-                <small>${upgrade.description}</small>
-            </div>
-        `)
-
-    // Добавляем элемент в список
-    upgradesList.append(upgradeElement)
-  })
+    $upgradesList.append($upgradeElement);
+  });
 }
 
 function openShop() {
-  renderShop()
-  $('#shop-modal').show()
+  renderShop();
+  $('#shop-modal').show();
 }
 
 function showLeaderboard() {
-  saveProgress() // Сохраняем прогресс, включая selectedCharacterId
-  const currentUser = Telegram.WebApp.initDataUnsafe.user // Получаем данные текущего пользователя
-  const currentUsername = currentUser?.username || 'unknown' // Используем username из Telegram
+  saveProgress();
+  const currentUser = Telegram.WebApp.initDataUnsafe.user;
+  const currentUsername = currentUser?.username || 'unknown';
 
   $.ajax({
     url: '/api/leaderboard',
     method: 'GET',
     dataType: 'json',
     success: function (data) {
-      const leaderboardList = $('#leaderboard-list')
-      leaderboardList.empty()
+      const $leaderboardList = $('#leaderboard-list').empty();
 
       if (data.length === 0) {
-        leaderboardList.append('<li>Рекорды пока отсутствуют.</li>')
+        $leaderboardList.append('<li>Рекорды пока отсутствуют.</li>');
       } else {
         data.forEach((player, index) => {
-          const li = $('<li>')
-          const playerUsername = player.username || 'unknown' // Используем username из данных или 'unknown'
+          const $li = $('<li>');
+          const playerUsername = player.username || 'unknown';
 
-          const usernameLink = $('<a>', {
+          const $usernameLink = $('<a>', {
             href: `https://t.me/${playerUsername}`,
             text: `@${playerUsername}`,
             css: {
@@ -515,49 +484,46 @@ function showLeaderboard() {
               color: '#007BFF',
               cursor: 'pointer'
             },
-            target: '_blank' // Открывать ссылку в новой вкладке
-          })
+            target: '_blank'
+          });
 
-          const placeNumber = $('<span>').text(`${index + 1}. `)
-          li.append(placeNumber)
+          const $placeNumber = $('<span>').text(`${index + 1}. `);
+          $li.append($placeNumber);
 
-          // Добавляем медали для первых трёх мест
           if (index === 0) {
-            li.append($('<span>').text('🥇 '))
+            $li.append($('<span>').text('🥇 '));
           } else if (index === 1) {
-            li.append($('<span>').text('🥈 '))
+            $li.append($('<span>').text('🥈 '));
           } else if (index === 2) {
-            li.append($('<span>').text('🥉 '))
+            $li.append($('<span>').text('🥉 '));
           }
 
-          li.append(usernameLink)
-          li.append(`: ${formatNumber(player.score)}`)
+          $li.append($usernameLink);
+          $li.append(`: ${formatNumber(player.score)}`);
 
-          // Подсвечиваем текущего пользователя
           if (playerUsername === currentUsername) {
-            li.css({
-              backgroundColor: '#2c3e50', // Светло-голубой фон
-              fontWeight: 'bold' // Жирный шрифт
-            })
+            $li.css({
+              backgroundColor: '#2c3e50',
+              fontWeight: 'bold'
+            });
           }
 
-          leaderboardList.append(li)
-        })
+          $leaderboardList.append($li);
+        });
       }
 
-      $('#leaderboard-modal').show()
+      $('#leaderboard-modal').show();
     },
     error: function (error) {
-      console.error('Ошибка загрузки таблицы рекордов:', error)
-      $('#leaderboard-list').html('<li>Не удалось загрузить рекорды.</li>')
-      $('#leaderboard-modal').show()
+      console.error('Ошибка загрузки таблицы рекордов:', error);
+      $('#leaderboard-list').html('<li>Не удалось загрузить рекорды.</li>');
+      $('#leaderboard-modal').show();
     }
-  })
+  });
 }
 
 function closeLeaderboard() {
-  const modal = document.getElementById('leaderboard-modal')
-  modal.style.display = 'none'
+  $('#leaderboard-modal').hide();
 }
 
 window.onclick = event => {
@@ -568,8 +534,8 @@ window.onclick = event => {
 }
 
 function saveProgress() {
-  const userId = Telegram.WebApp.initDataUnsafe.user?.id || 1
-  const username = Telegram.WebApp.initDataUnsafe.user?.username || 'unknown' // Получаем username
+  const userId = Telegram.WebApp.initDataUnsafe.user?.id || 1;
+  const username = Telegram.WebApp.initDataUnsafe.user?.username || 'unknown';
   const gameData = {
     score,
     coins,
@@ -582,115 +548,106 @@ function saveProgress() {
     criticalHitCount,
     coinBonusCount,
     xpBoostCount,
-    selectedCharacter: selectedCharacter ? selectedCharacter.id : null // Сохраняем ID выбранного персонажа
-  }
+    selectedCharacter: selectedCharacter ? selectedCharacter.id : null
+  };
 
-  localStorage.setItem('gameData', JSON.stringify(gameData))
+  localStorage.setItem('gameData', JSON.stringify(gameData));
 
   $.ajax({
     url: '/api/save',
     method: 'POST',
     contentType: 'application/json',
-    data: JSON.stringify({userId, ...gameData}),
+    data: JSON.stringify({ userId, ...gameData }),
     success: function (response) {
-      console.log('Данные успешно сохранены:', response)
+      console.log('Данные успешно сохранены:', response);
     },
     error: function (error) {
-      console.error('Ошибка сохранения:', error)
+      console.error('Ошибка сохранения:', error);
     }
-  })
+  });
 }
 
 function loadProgress() {
-  const userId = Telegram.WebApp.initDataUnsafe.user?.id
+  const userId = Telegram.WebApp.initDataUnsafe.user?.id;
   if (userId) {
     $.ajax({
       url: '/api/load',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({userId}),
+      data: JSON.stringify({ userId }),
       dataType: 'json',
       success: function (data) {
         if (data && data.user) {
-          const userData = data.user
-          score = userData.score || 0
-          coins = userData.coins || 0
-          level = userData.level || 1
-          xp = userData.xp || 0
-          multiplier = userData.multiplier || 1
-          multiplierCount = userData.multiplierCount || 0
-          autoClickerCount = userData.autoClickerCount || 0
-          criticalHitCount = userData.criticalHitCount || 0
-          coinBonusCount = userData.coinBonusCount || 0
-          xpBoostCount = userData.xpBoostCount || 0
+          const userData = data.user;
+          score = userData.score || 0;
+          coins = userData.coins || 0;
+          level = userData.level || 1;
+          xp = userData.xp || 0;
+          multiplier = userData.multiplier || 1;
+          multiplierCount = userData.multiplierCount || 0;
+          autoClickerCount = userData.autoClickerCount || 0;
+          criticalHitCount = userData.criticalHitCount || 0;
+          coinBonusCount = userData.coinBonusCount || 0;
+          xpBoostCount = userData.xpBoostCount || 0;
 
           if (userData.selectedCharacter) {
             selectedCharacter = configCharacter.characters.find(
               char => char.id === userData.selectedCharacter
-            )
-            selectCharacter(selectedCharacter)
+            );
+            selectCharacter(selectedCharacter);
           }
 
-          updateUI()
+          updateUI();
 
           if (autoClickerCount > 0) {
-            applyAutoClickerEffect()
+            applyAutoClickerEffect();
           }
         }
       },
       error: function (error) {
-        console.error('Ошибка загрузки с сервера:', error)
+        console.error('Ошибка загрузки с сервера:', error);
       }
-    })
+    });
   } else {
-    const savedData = localStorage.getItem('gameData')
+    const savedData = localStorage.getItem('gameData');
     if (savedData) {
-      const gameData = JSON.parse(savedData)
-      score = gameData.score || 0
-      coins = gameData.coins || 0
-      level = gameData.level || 1
-      xp = gameData.xp || 0
-      multiplier = gameData.multiplier || 1
-      multiplierCount = gameData.multiplierCount || 0
-      autoClickerCount = gameData.autoClickerCount || 0
-      criticalHitCount = gameData.criticalHitCount || 0
-      coinBonusCount = gameData.coinBonusCount || 0
-      xpBoostCount = gameData.xpBoostCount || 0
+      const gameData = JSON.parse(savedData);
+      score = gameData.score || 0;
+      coins = gameData.coins || 0;
+      level = gameData.level || 1;
+      xp = gameData.xp || 0;
+      multiplier = gameData.multiplier || 1;
+      multiplierCount = gameData.multiplierCount || 0;
+      autoClickerCount = gameData.autoClickerCount || 0;
+      criticalHitCount = gameData.criticalHitCount || 0;
+      coinBonusCount = gameData.coinBonusCount || 0;
+      xpBoostCount = gameData.xpBoostCount || 0;
 
       if (gameData.selectedCharacter) {
         selectedCharacter = configCharacter.characters.find(
           char => char.id === gameData.selectedCharacter
-        )
-        selectCharacter(selectedCharacter)
+        );
+        selectCharacter(selectedCharacter);
       }
 
-      updateUI()
+      updateUI();
 
       if (autoClickerCount > 0) {
-        applyAutoClickerEffect()
+        applyAutoClickerEffect();
       }
     }
   }
 
-  updateImage()
+  updateImage();
 }
 
 function formatNumber(number) {
-  if (number >= 1e12) {
-    // Триллионы
-    return (number / 1e12).toFixed(2) + 'T'
-  } else if (number >= 1e9) {
-    // Миллиарды
-    return (number / 1e9).toFixed(2) + 'B'
-  } else if (number >= 1e6) {
-    // Миллионы
-    return (number / 1e6).toFixed(2) + 'M'
-  } else if (number >= 1e3) {
-    // Тысячи
-    return (number / 1e3).toFixed(2) + 'K'
-  } else {
-    return number.toString() // Меньше 1000
-  }
+  const absNumber = Math.abs(number);
+  if (absNumber >= 1e12) return `${(number / 1e12).toFixed(2)}T`;
+  if (absNumber >= 1e9) return `${(number / 1e9).toFixed(2)}B`;
+  if (absNumber >= 1e6) return `${(number / 1e6).toFixed(2)}M`;
+  if (absNumber >= 1e3) return `${(number / 1e3).toFixed(2)}K`;
+  return number.toString();
 }
 function updateUI() {
   $('#score').text(formatNumber(score))
@@ -714,19 +671,16 @@ function updateUI() {
 }
 
 function createTapEffect(x, y) {
-  const effect = document.createElement('div')
-  effect.className = 'tap-effect'
-  effect.style.left = `${x}px`
-  effect.style.top = `${y}px`
-  document.body.appendChild(effect)
-  setTimeout(() => effect.remove(), 1000)
+  const $effect = $('<div>').addClass('tap-effect').css({ left: `${x}px`, top: `${y}px` });
+  $('body').append($effect);
+  setTimeout(() => $effect.remove(), 1000);
 }
 
 function updateImage() {
-  const character = getCurrentCharacter()
-  $('#tap-image').attr('src', character.image)
-  $('#tap-sound').attr('src', character.sound)
-  if ($('#tap-circle').hasClass('flipped')) updateCharacterDescription()
+  const character = getCurrentCharacter();
+  $('#tap-image').attr('src', character.image);
+  $('#tap-sound').attr('src', character.sound);
+  if ($('#tap-circle').hasClass('flipped')) updateCharacterDescription();
 }
 
 function showNewCharacterPopup(character) {
@@ -735,7 +689,7 @@ function showNewCharacterPopup(character) {
     .html(`<h2>🎉 Новый персонаж!</h2><p>${character.name}!</p>`)
     .appendTo('body')
     .delay(3000)
-    .fadeOut(() => $(this).remove())
+    .fadeOut(() => $(this).remove());
 }
 
 function getCharacterForLevel(currentLevel) {
@@ -751,26 +705,19 @@ function getCharacterForLevel(currentLevel) {
 }
 
 function showLevelUpPopup() {
-  console.log('showLevelUpPopup вызвана') // Логирование
-  const popup = document.createElement('div')
-  popup.className = 'level-up-popup'
-  popup.innerHTML = `
-        <h2>🎉 Уровень ${level}!</h2>
-        <p>+${formatNumber(level * coin_for_level)} монет</p>
-    `
-  document.body.appendChild(popup)
-  setTimeout(() => popup.remove(), 3000)
+  const $popup = $('<div>').addClass('level-up-popup').html(`
+    <h2>🎉 Уровень ${level}!</h2>
+    <p>+${formatNumber(level * coin_for_level)} монет</p>
+  `);
+  $('body').append($popup);
+  setTimeout(() => $popup.remove(), 1000);
 }
 
 function showError(message) {
-  const errorElement = document.getElementById('error-message')
-  if (errorElement) {
-    errorElement.textContent = message
-    errorElement.style.display = 'block'
-
-    setTimeout(() => {
-      errorElement.style.display = 'none'
-    }, 5000)
+  const $errorElement = $('#error-message');
+  if ($errorElement.length) {
+    $errorElement.text(message).show();
+    setTimeout(() => $errorElement.hide(), 3000);
   }
 }
 
@@ -808,42 +755,42 @@ function shareProgress() {
 function openCharacterModal() {
   const nextUnlockLevel = configCharacter.characters
     .filter(c => c.entryLevel > level)
-    .sort((a, b) => a.entryLevel - b.entryLevel)[0]?.entryLevel
+    .sort((a, b) => a.entryLevel - b.entryLevel)[0]?.entryLevel;
 
-  $('#character-list')
-    .empty()
-    .append(
-      configCharacter.characters.map(character =>
-        $('<div>')
-          .addClass('character-item')
-          .toggleClass('locked', character.entryLevel > level)
-          .html(
-            character.entryLevel <= level
-              ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span>`
-              : `<div class="locked-character"></div><span>???</span><small>Откроется на уровне ${character.entryLevel}</small>`
-          )
-          .on('click', () => character.entryLevel <= level && selectCharacter(character))
+  const $characterList = $('#character-list').empty();
+
+  configCharacter.characters.forEach(character => {
+    const $characterItem = $('<div>')
+      .addClass('character-item')
+      .toggleClass('locked', character.entryLevel > level)
+      .html(
+        character.entryLevel <= level
+          ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span>`
+          : `<div class="locked-character"></div><span>???</span><small>Откроется на уровне ${character.entryLevel}</small>`
       )
-    )
+      .on('click', () => character.entryLevel <= level && selectCharacter(character));
+
+    $characterList.append($characterItem);
+  });
 
   $('#next-unlock-info').text(
     nextUnlockLevel
       ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
       : 'Все персонажи открыты'
-  )
+  );
 
-  $('#character-modal').show()
+  $('#character-modal').show();
 }
 
 function closeCharacterModal() {
-  document.getElementById('character-modal').style.display = 'none'
+  $('#character-modal').hide();
 }
 
 function selectCharacter(character) {
-  selectedCharacter = character // Устанавливаем выбранного персонажа
-  updateImage() // Обновляем изображение
-  closeCharacterModal() // Закрываем модальное окно
-  saveProgress() // Сохраняем прогресс после выбора персонажа
+  selectedCharacter = character;
+  updateImage();
+  closeCharacterModal();
+  saveProgress();
 }
 loadProgress()
 updateImage()
