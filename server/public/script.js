@@ -33,6 +33,15 @@ const configCharacter = {
       description: 'Любит играть, не любит ходить за хлебом '
     },
     {
+      id: 11,
+      name: 'Существо',
+      entryLevel: 2,
+      image: 'images/anything.gif',
+      sound: 'sounds/maksim.m4a',
+      animationDuration: 1500,
+      description: 'Любит играть, не любит ходить за хлебом '
+    },
+    {
       id: 2,
       name: 'Глебаста',
       entryLevel: 5,
@@ -68,8 +77,9 @@ const configCharacter = {
       id: 6,
       name: 'Жека',
       entryLevel: 100,
-      image: 'images/jeka_isaenko.jpg',
+      image: 'images/evgeniy.gif',
       sound: 'sounds/jeka_isaenko.mp3',
+      animationDuration: 1500,
       description: 'Душа компании, любит Подушки. Часовщик'
     },
     {
