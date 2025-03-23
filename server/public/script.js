@@ -844,14 +844,5 @@ function selectCharacter(character) {
   closeCharacterModal() // Закрываем модальное окно
   saveProgress() // Сохраняем прогресс после выбора персонажа
 }
-Telegram.WebApp.onEvent('viewportChanged', function () {
-  if (!Telegram.WebApp.isExpanded) {
-    saveProgress()
-  }
-})
-
-window.addEventListener('beforeunload', function () {
-  saveProgress()
-})
 loadProgress()
 updateImage()
