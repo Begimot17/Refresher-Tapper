@@ -29,7 +29,6 @@ const configCharacter = {
       entryLevel: 1,
       image: 'images/maksim.gif',
       sound: 'sounds/maksim.m4a',
-      animationDuration: 1500,
       description: 'Любит играть, не любит ходить за хлебом '
     },
     {
@@ -38,7 +37,6 @@ const configCharacter = {
       entryLevel: 2,
       image: 'images/anything.gif',
       sound: 'sounds/maksim.m4a',
-      animationDuration: 1500,
       description: 'Любит играть, не любит ходить за хлебом '
     },
     {
@@ -264,7 +262,7 @@ function checkLevelUp() {
   }
   if (levelsGained > 0) {
     updateLevel(levelsGained)
-    showLevelUpPopup(levelsGained) // Показываем попап повышения уровня
+    showLevelUpPopup()
     updateUI()
   }
 }
@@ -751,7 +749,7 @@ function getCharacterForLevel(currentLevel) {
   return unlockedCharacter
 }
 
-function showLevelUpPopup(levelsGained) {
+function showLevelUpPopup() {
   console.log('showLevelUpPopup вызвана') // Логирование
   const popup = document.createElement('div')
   popup.className = 'level-up-popup'
@@ -846,13 +844,13 @@ function selectCharacter(character) {
   closeCharacterModal() // Закрываем модальное окно
   saveProgress() // Сохраняем прогресс после выбора персонажа
 }
-Telegram.WebApp.onEvent('viewportChanged', function (e) {
+Telegram.WebApp.onEvent('viewportChanged', function () {
   if (!Telegram.WebApp.isExpanded) {
     saveProgress()
   }
 })
 
-window.addEventListener('beforeunload', function (e) {
+window.addEventListener('beforeunload', function () {
   saveProgress()
 })
 loadProgress()
