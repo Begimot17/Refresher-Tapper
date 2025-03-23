@@ -173,7 +173,7 @@ const shopConfig = {
     }
   ]
 }
-selectedCharacter = configCharacter.characters.find(char => char.id === 1)
+let selectedCharacter = configCharacter.characters.find(char => char.id === 1)
 const tapSound = document.getElementById('tap-sound')
 function handleTap(event) {
   tapSound.currentTime = 0
@@ -422,12 +422,13 @@ function applyAutoClickerEffect() {
   if (!autoClickerActive) {
     autoClickerActive = true
     setInterval(() => {
-      score += multiplier
-      coins += multiplier
-      xp += multiplier
+      let autoMultiplier = multiplier+autoClickerCount
+      score += autoMultiplier
+      coins += autoMultiplier
+      xp += autoMultiplier
 
-      updateScore(multiplier)
-      updateCoins(multiplier)
+      updateScore(autoMultiplier)
+      updateCoins(autoMultiplier)
       checkLevelUp()
       updateUI()
     }, 1000)
