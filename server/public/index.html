@@ -63,7 +63,21 @@
         <span class="close" onclick="closeMenuModal()">&times;</span>
         <h2>🍔 Меню</h2>
         <div class="menu-options">
-          <button class="btn" onclick="shareProgress()">📤 Поделиться</button>
+          <button class="btn" onclick="openProfile()">
+            👤 Профиль
+          </button>
+          <button class="btn" onclick="openAchievements()">
+            🏅 Достижения
+          </button>
+          <button class="btn" onclick="openChatModal()">
+            💬 ЧатНя
+          </button>
+          <button class="btn" id="reset-button" onclick="confirmResetProgress()">
+            🔄 Обнулить прогресс
+          </button>
+          <button class="btn" onclick="shareProgress()">
+            📤 Поделиться
+          </button>
         </div>
       </div>
     </div>
@@ -88,6 +102,27 @@
         <span class="close" onclick="closeLeaderboard()">&times;</span>
         <h2>🏆 Таблица рекордов</h2>
         <ul id="leaderboard-list" class="leaderboard-list"></ul>
+      </div>
+    </div>
+    <div id="custom-confirm-modal" class="modal">
+      <div class="modal-content">
+        <h2>⚠️ Подтверждение</h2>
+        <p>Вы уверены, что хотите обнулить прогресс? Это действие нельзя отменить.</p>
+        <div class="modal-buttons">
+          <button id="confirm-reset">Да, обнулить</button>
+          <button id="cancel-reset">Отмена</button>
+        </div>
+      </div>
+    </div>
+    <div id="chat-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeChatModal()">&times;</span>
+        <h2>💬 ЧатНя</h2>
+        <div id="chat-container">
+          <div id="chat-messages"></div>
+          <input type="text" id="chat-input" placeholder="Введите сообщение..." />
+          <button id="chat-send">Отправить</button>
+        </div>
       </div>
     </div>
     <div id="error-message"></div>

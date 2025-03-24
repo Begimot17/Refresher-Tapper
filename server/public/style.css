@@ -660,4 +660,186 @@ h1 {
 .menu-options .btn {
   width: 100%; /* Кнопки на всю ширину */
   justify-content: center; /* Центрируем текст */
+}/* Стили для кастомного confirm */
+#custom-confirm-modal {
+  display: none; /* Скрыто по умолчанию */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Убедитесь, что модальное окно поверх других элементов */
+}
+
+#custom-confirm-modal .modal-content {
+  background: #34495e; /* Цвет фона, как у других модальных окон */
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out; /* Анимация появления */
+}
+
+#custom-confirm-modal h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: white;
+}
+
+#custom-confirm-modal p {
+  font-size: 16px;
+  color: #bdc3c7;
+  margin-bottom: 20px;
+}
+
+#custom-confirm-modal .modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Расстояние между кнопками */
+}
+
+/* Стили для кнопок подтверждения и отмены */
+#custom-confirm-modal .confirm-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b); /* Красный градиент */
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+#custom-confirm-modal .cancel-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9); /* Синий градиент */
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+/* Эффекты при наведении */
+#custom-confirm-modal .confirm-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(231, 76, 60, 0.3);
+}
+
+#custom-confirm-modal .cancel-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
+}
+
+/* Эффекты при нажатии */
+#custom-confirm-modal .confirm-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(231, 76, 60, 0.2);
+}
+
+#custom-confirm-modal .cancel-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Стили для модального окна чата */
+#chat-modal {
+  display: none; /* Скрыто по умолчанию */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Убедитесь, что окно поверх других элементов */
+}
+
+#chat-modal .modal-content {
+  background: #34495e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh; /* Ограничиваем высоту */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#chat-modal h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#chat-messages {
+  height: 300px;
+  overflow-y: auto;
+  background: #2c3e50;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+#chat-input {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #2c3e50;
+  color: white;
+}
+
+#chat-send {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#chat-send:hover {
+  background: #2980b9;
+}
+
+/* Стили для кнопки закрытия */
+#chat-modal .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+}
+
+#chat-modal .close:hover {
+  color: #e74c3c;
 }

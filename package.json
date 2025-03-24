@@ -4,5 +4,8 @@
   },
   "scripts": {
     "format": "prettier --write \"**/*.{html,css,js}\""
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
   }
 }

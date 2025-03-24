@@ -173,7 +173,6 @@ const shopConfig = {
     }
   ]
 }
-let selectedCharacter = configCharacter.characters.find(char => char.id === 1)
 const $tapSound = $('#tap-sound')[0]
 const baseCriticalHitChance = 0.1
 const baseCriticalHitMultiplier = 2
@@ -817,6 +816,74 @@ $(document).ready(function () {
       $('#menu-modal').hide()
     }
   })
+})
+// Функция для открытия кастомного confirm
+function confirmResetProgress() {
+  const customConfirmModal = document.getElementById('custom-confirm-modal');
+  customConfirmModal.style.display = 'flex'; // Показываем модальное окно
+}
+
+// Функция для закрытия кастомного confirm
+function closeCustomConfirmModal() {
+  const customConfirmModal = document.getElementById('custom-confirm-modal');
+  customConfirmModal.style.display = 'none'; // Скрываем модальное окно
+}
+
+// Обработчик для кнопки "Да, обнулить"
+document.getElementById('confirm-reset').addEventListener('click', function () {
+  resetProgress(); // Выполняем сброс прогресса
+  closeCustomConfirmModal(); // Закрываем модальное окно
+});
+
+// Обработчик для кнопки "Отмена"
+document.getElementById('cancel-reset').addEventListener('click', function () {
+  closeCustomConfirmModal(); // Закрываем модальное окно без действий
+});
+
+// Функция сброса прогресса
+function resetProgress() {
+  score = 0;
+  coins = 0;
+  level = 1;
+  xp = 0;
+  multiplier = 1;
+  multiplierCount = 0;
+  autoClickerCount = 0;
+  criticalHitCount = 0;
+  coinBonusCount = 0;
+  xpBoostCount = 0;
+  selectedCharacter = configCharacter.characters.find(char => char.id === 1);
+  autoClickerActive = false;
+  localStorage.removeItem('gameData');
+
+  updateUI();
+  updateImage();
+
+  showError("Прогресс успешно обнулен!");
+}
+window.addEventListener('click', function (event) {
+  const customConfirmModal = document.getElementById('custom-confirm-modal');
+  if (event.target === customConfirmModal) {
+    closeCustomConfirmModal();
+  }
+});
+function openChatModal() {
+  const chatModal = document.getElementById('chat-modal')
+  chatModal.style.display = 'flex'
+}
+
+// Функция для закрытия модального окна чата
+function closeChatModal() {
+  const chatModal = document.getElementById('chat-modal')
+  chatModal.style.display = 'none'
+}
+
+// Закрытие модального окна при клике вне его
+window.addEventListener('click', (event) => {
+  const chatModal = document.getElementById('chat-modal')
+  if (event.target === chatModal) {
+    closeChatModal()
+  }
 })
 loadProgress()
 updateImage()
