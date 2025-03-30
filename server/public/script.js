@@ -18,9 +18,6 @@ Telegram.WebApp.ready()
 Telegram.WebApp.expand()
 
 const tapCircle = document.getElementById('tap-circle')
-const scoreElement = document.getElementById('score')
-const coinsElement = document.getElementById('coins')
-const levelElement = document.getElementById('level')
 const configCharacter = {
   characters: [
     {
@@ -36,8 +33,15 @@ const configCharacter = {
       name: 'Существо',
       entryLevel: 2,
       image: 'images/anything.gif',
-      sound: 'sounds/maksim.m4a',
-      description: 'Любит играть, не любит ходить за хлебом '
+      sound: 'sounds/maksim.m4a'
+    },
+    {
+      id: 12,
+      name: 'Рома',
+      entryLevel: 3,
+      image: 'images/roma.gif',
+      sound: 'sounds/roma.m4a',
+      description: 'Черничный пёс'
     },
     {
       id: 2,
@@ -724,7 +728,7 @@ function showError(message) {
   const $errorElement = $('#error-message')
   if ($errorElement.length) {
     $errorElement.text(message).show()
-    setTimeout(() => $errorElement.hide(), 3000)
+    setTimeout(() => $errorElement.hide(), 1500)
   }
 }
 
@@ -819,54 +823,55 @@ $(document).ready(function () {
 })
 // Функция для открытия кастомного confirm
 function confirmResetProgress() {
-  const customConfirmModal = document.getElementById('custom-confirm-modal');
-  customConfirmModal.style.display = 'flex'; // Показываем модальное окно
+  const customConfirmModal = document.getElementById('custom-confirm-modal')
+  customConfirmModal.style.display = 'flex' // Показываем модальное окно
 }
 
 // Функция для закрытия кастомного confirm
 function closeCustomConfirmModal() {
-  const customConfirmModal = document.getElementById('custom-confirm-modal');
-  customConfirmModal.style.display = 'none'; // Скрываем модальное окно
+  const customConfirmModal = document.getElementById('custom-confirm-modal')
+  customConfirmModal.style.display = 'none' // Скрываем модальное окно
 }
 
 // Обработчик для кнопки "Да, обнулить"
 document.getElementById('confirm-reset').addEventListener('click', function () {
-  resetProgress(); // Выполняем сброс прогресса
-  closeCustomConfirmModal(); // Закрываем модальное окно
-});
+  resetProgress() // Выполняем сброс прогресса
+  closeCustomConfirmModal() // Закрываем модальное окно
+})
 
 // Обработчик для кнопки "Отмена"
 document.getElementById('cancel-reset').addEventListener('click', function () {
-  closeCustomConfirmModal(); // Закрываем модальное окно без действий
-});
+  closeCustomConfirmModal() // Закрываем модальное окно без действий
+})
 
 // Функция сброса прогресса
 function resetProgress() {
-  score = 0;
-  coins = 0;
-  level = 1;
-  xp = 0;
-  multiplier = 1;
-  multiplierCount = 0;
-  autoClickerCount = 0;
-  criticalHitCount = 0;
-  coinBonusCount = 0;
-  xpBoostCount = 0;
-  selectedCharacter = configCharacter.characters.find(char => char.id === 1);
-  autoClickerActive = false;
-  localStorage.removeItem('gameData');
+  score = 0
+  coins = 0
+  level = 1
+  xp = 0
+  multiplier = 1
+  multiplierCount = 0
+  autoClickerCount = 0
+  criticalHitCount = 0
+  coinBonusCount = 0
+  xpBoostCount = 0
+  selectedCharacter = configCharacter.characters.find(char => char.id === 1)
+  autoClickerActive = false
+  localStorage.removeItem('gameData')
 
-  updateUI();
-  updateImage();
+  saveProgress()
+  updateUI()
+  updateImage()
 
-  showError("Прогресс успешно обнулен!");
+  showError('Прогресс успешно обнулен!')
 }
 window.addEventListener('click', function (event) {
-  const customConfirmModal = document.getElementById('custom-confirm-modal');
+  const customConfirmModal = document.getElementById('custom-confirm-modal')
   if (event.target === customConfirmModal) {
-    closeCustomConfirmModal();
+    closeCustomConfirmModal()
   }
-});
+})
 function openChatModal() {
   const chatModal = document.getElementById('chat-modal')
   chatModal.style.display = 'flex'
@@ -879,7 +884,7 @@ function closeChatModal() {
 }
 
 // Закрытие модального окна при клике вне его
-window.addEventListener('click', (event) => {
+window.addEventListener('click', event => {
   const chatModal = document.getElementById('chat-modal')
   if (event.target === chatModal) {
     closeChatModal()

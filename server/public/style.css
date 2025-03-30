@@ -660,7 +660,7 @@ h1 {
 .menu-options .btn {
   width: 100%; /* Кнопки на всю ширину */
   justify-content: center; /* Центрируем текст */
-}/* Стили для кастомного confirm */
+} /* Стили для кастомного confirm */
 #custom-confirm-modal {
   display: none; /* Скрыто по умолчанию */
   position: fixed;
