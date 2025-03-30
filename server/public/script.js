@@ -23,21 +23,21 @@ const configCharacter = {
   characters: [
     {
       id: 1,
-      name: 'Максим',
+      name: 'Существо',
       entryLevel: 1,
+      image: 'images/anything.gif',
+      sound: 'sounds/default.mp3'
+    },
+    {
+      id: 2,
+      name: 'Максим',
+      entryLevel: 5,
       image: 'images/maksim.gif',
       sound: 'sounds/maksim.m4a',
       description: 'Любит играть, не любит ходить за хлебом '
     },
     {
-      id: 11,
-      name: 'Существо',
-      entryLevel: 5,
-      image: 'images/anything.gif',
-      sound: 'sounds/maksim.m4a'
-    },
-    {
-      id: 12,
+      id: 3,
       name: 'Рома',
       entryLevel: 10,
       image: 'images/roma.gif',
@@ -45,7 +45,7 @@ const configCharacter = {
       description: 'Черничный пёс'
     },
     {
-      id: 2,
+      id: 4,
       name: 'Глебаста',
       entryLevel: 15,
       image: 'images/glebasta.jpg',
@@ -53,7 +53,7 @@ const configCharacter = {
       description: 'Душа компании, любит Короля и Шута. Моряк'
     },
     {
-      id: 3,
+      id: 5,
       name: 'Любомир',
       entryLevel: 20,
       image: 'images/lubomir.jpg',
@@ -61,7 +61,7 @@ const configCharacter = {
       description: 'Душа компании, любит Серьёзного Сема. Ветеран'
     },
     {
-      id: 4,
+      id: 6,
       name: 'Лёша',
       entryLevel: 25,
       image: 'images/lesha_dyachkov.jpg',
@@ -69,7 +69,7 @@ const configCharacter = {
       description: 'Душа компании, любит Ланос. Электрик'
     },
     {
-      id: 5,
+      id: 7,
       name: 'Дима',
       entryLevel: 35,
       image: 'images/dima_brusko.jpg',
@@ -77,7 +77,7 @@ const configCharacter = {
       description: 'Душа АЙТИ компании, любит Макбук. Программист'
     },
     {
-      id: 6,
+      id: 8,
       name: 'Жека',
       entryLevel: 50,
       image: 'images/evgeniy.gif',
@@ -86,7 +86,7 @@ const configCharacter = {
       description: 'Душа компании, любит Подушки. Часовщик'
     },
     {
-      id: 7,
+      id: 9,
       name: 'Саня',
       entryLevel: 75,
       image: 'images/sasha_isaenko.jpg',
@@ -94,7 +94,7 @@ const configCharacter = {
       description: 'Душа компании, любит CS GO. Камерщик'
     },
     {
-      id: 8,
+      id: 10,
       name: 'Жума',
       entryLevel: 100,
       image: 'images/juma.jpg',
@@ -102,7 +102,7 @@ const configCharacter = {
       description: 'Душа компании, любит Lays. Асперанто-Лаборанто'
     },
     {
-      id: 9,
+      id: 11,
       name: 'Никита',
       entryLevel: 150,
       image: 'images/nikita.jpg',
@@ -110,7 +110,7 @@ const configCharacter = {
       description: 'Бог'
     },
     {
-      id: 10,
+      id: 12,
       name: 'Дуля',
       entryLevel: 999,
       image: 'images/dula.jpg',
