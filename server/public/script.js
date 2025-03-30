@@ -31,14 +31,14 @@ const configCharacter = {
     {
       id: 11,
       name: 'Существо',
-      entryLevel: 2,
+      entryLevel: 5,
       image: 'images/anything.gif',
       sound: 'sounds/maksim.m4a'
     },
     {
       id: 12,
       name: 'Рома',
-      entryLevel: 3,
+      entryLevel: 10,
       image: 'images/roma.gif',
       sound: 'sounds/roma.m4a',
       description: 'Черничный пёс'
@@ -46,7 +46,7 @@ const configCharacter = {
     {
       id: 2,
       name: 'Глебаста',
-      entryLevel: 5,
+      entryLevel: 15,
       image: 'images/glebasta.jpg',
       sound: 'sounds/default.mp3',
       description: 'Душа компании, любит Короля и Шута. Моряк'
@@ -54,7 +54,7 @@ const configCharacter = {
     {
       id: 3,
       name: 'Любомир',
-      entryLevel: 10,
+      entryLevel: 20,
       image: 'images/lubomir.jpg',
       sound: 'sounds/lubomir.mp3',
       description: 'Душа компании, любит Серьёзного Сема. Ветеран'
@@ -62,7 +62,7 @@ const configCharacter = {
     {
       id: 4,
       name: 'Лёша',
-      entryLevel: 20,
+      entryLevel: 25,
       image: 'images/lesha_dyachkov.jpg',
       sound: 'sounds/lesha_dyachkov.mp3',
       description: 'Душа компании, любит Ланос. Электрик'
@@ -70,7 +70,7 @@ const configCharacter = {
     {
       id: 5,
       name: 'Дима',
-      entryLevel: 50,
+      entryLevel: 35,
       image: 'images/dima_brusko.jpg',
       sound: 'sounds/dima_brusko.mp3',
       description: 'Душа АЙТИ компании, любит Макбук. Программист'
@@ -78,7 +78,7 @@ const configCharacter = {
     {
       id: 6,
       name: 'Жека',
-      entryLevel: 100,
+      entryLevel: 50,
       image: 'images/evgeniy.gif',
       sound: 'sounds/jeka_isaenko.mp3',
       animationDuration: 1500,
@@ -87,7 +87,7 @@ const configCharacter = {
     {
       id: 7,
       name: 'Саня',
-      entryLevel: 200,
+      entryLevel: 75,
       image: 'images/sasha_isaenko.jpg',
       sound: 'sounds/sasha_isaenko.mp3',
       description: 'Душа компании, любит CS GO. Камерщик'
@@ -95,7 +95,7 @@ const configCharacter = {
     {
       id: 8,
       name: 'Жума',
-      entryLevel: 500,
+      entryLevel: 100,
       image: 'images/juma.jpg',
       sound: 'sounds/juma.mp3',
       description: 'Душа компании, любит Lays. Асперанто-Лаборанто'
@@ -103,7 +103,7 @@ const configCharacter = {
     {
       id: 9,
       name: 'Никита',
-      entryLevel: 1000,
+      entryLevel: 150,
       image: 'images/nikita.jpg',
       sound: 'sounds/nikita.mp3',
       description: 'Бог'
@@ -111,7 +111,7 @@ const configCharacter = {
     {
       id: 10,
       name: 'Дуля',
-      entryLevel: 9999,
+      entryLevel: 999,
       image: 'images/dula.jpg',
       sound: 'sounds/dula.mp3',
       description: '😜'
