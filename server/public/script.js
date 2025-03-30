@@ -13,6 +13,7 @@ let coinBonusCount = 0 // Уровень улучшения "Бонус моне
 let xpBoostCount = 0
 let touchStartX = 0
 let touchEndX = 0
+let selectedCharacter = null
 
 Telegram.WebApp.ready()
 Telegram.WebApp.expand()
@@ -646,7 +647,6 @@ function loadProgress() {
       }
     }
   }
-
   updateImage()
 }
 
