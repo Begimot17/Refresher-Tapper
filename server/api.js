@@ -179,13 +179,16 @@ app.post('/api/chat/send', async (req, res) => {
       return res.status(400).json({ error: 'Пользователь не найден' });
     }
     
-    if (user.diamonds < 10) {
+    // Cost in diamonds to send a message
+    const MESSAGE_COST = 1;
+    
+    if (user.diamonds < MESSAGE_COST) {
       console.log('Not enough diamonds:', user.diamonds);
       return res.status(400).json({ error: 'Недостаточно алмазов для отправки сообщения' });
     }
 
-    // Уменьшаем количество алмазов на 10
-    user.diamonds -= 10;
+    // Уменьшаем количество алмазов
+    user.diamonds -= MESSAGE_COST;
     await user.save();
     console.log('Diamonds updated:', user.diamonds);
 

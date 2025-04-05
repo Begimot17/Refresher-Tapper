@@ -52,7 +52,7 @@ class UIManager {
     $('#chat-modal #send-message-btn .diamond-count').text(` - У вас: ${this.game.diamonds}`);
     
     // Check if user has enough diamonds and update button state
-    const hasEnoughDiamonds = this.game.diamonds >= 10;
+    const hasEnoughDiamonds = this.game.diamonds >= this.game.chatManager.MESSAGE_COST;
     
     // Update button state in both places
     $('#send-message-btn').toggleClass('inactive', !hasEnoughDiamonds);
@@ -74,7 +74,7 @@ class UIManager {
     
     // Check if button is inactive (not enough diamonds)
     if ($('#send-message-btn').hasClass('inactive')) {
-      alert('Недостаточно алмазов! Нужно 10 алмазов для отправки сообщения.');
+      alert(`Недостаточно алмазов! Нужно ${this.game.chatManager.MESSAGE_COST} алмаз для отправки сообщения.`);
       return;
     }
     
@@ -608,8 +608,7 @@ class UIManager {
     // Render each unlocked achievement
     unlockedAchievements.forEach(achievement => {
       const $achievementItem = $('<div>')
-        .addClass('achievement-item')
-        .on('click', () => this.showAchievementPopup(achievement));
+        .addClass('achievement-item');
       
       // Create achievement content
       const $achievementContent = $('<div>').addClass('achievement-content');
@@ -651,26 +650,5 @@ class UIManager {
     
     // Force update UI to ensure all values are displayed correctly
     this.updateUI();
-  }
-  
-  showAchievementPopup(achievement) {
-    const $popup = $('#achievement-popup');
-    
-    $popup.find('.achievement-popup-icon').text(achievement.icon);
-    $popup.find('.achievement-popup-name').text(achievement.name);
-    $popup.find('.achievement-popup-description').text(achievement.description);
-    $popup.find('.achievement-popup-reward').text(`Награда: ${achievement.reward} 💎`);
-    
-    $popup.fadeIn();
-    
-    // Close popup when clicking the close button
-    $popup.find('.achievement-popup-close').one('click', () => {
-      $popup.fadeOut();
-    });
-    
-    // Auto-close after 5 seconds
-    setTimeout(() => {
-      $popup.fadeOut();
-    }, 5000);
   }
 } 

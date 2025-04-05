@@ -3,6 +3,7 @@ class ChatManager {
     this.game = game;
     this.messages = [];
     this.maxMessages = 50; // Maximum number of messages to keep
+    this.MESSAGE_COST = 1; // Cost in diamonds to send a message
     this.loadMessages(); // Load messages when initialized
   }
   
@@ -19,8 +20,8 @@ class ChatManager {
     }
     
     // Check if user has enough diamonds
-    if (this.game.diamonds < 10) {
-      alert('Недостаточно алмазов! Нужно 10 алмазов для отправки сообщения.');
+    if (this.game.diamonds < this.MESSAGE_COST) {
+      alert(`Недостаточно алмазов! Нужно ${this.MESSAGE_COST} алмаз для отправки сообщения.`);
       return false;
     }
 
@@ -37,7 +38,7 @@ class ChatManager {
     // Only deduct diamonds and update UI if server accepted the message
     if (success) {
       // Deduct diamonds
-      this.game.diamonds -= 10;
+      this.game.diamonds -= this.MESSAGE_COST;
       
       // Add message to local messages
       this.messages.push(messageObj);
@@ -62,8 +63,8 @@ class ChatManager {
     
     // Check if user has enough diamonds before sending
     console.log('Current diamonds before sending:', this.game.diamonds);
-    if (this.game.diamonds < 10) {
-      alert('Недостаточно алмазов! Нужно 10 алмазов для отправки сообщения.');
+    if (this.game.diamonds < this.MESSAGE_COST) {
+      alert(`Недостаточно алмазов! Нужно ${this.MESSAGE_COST} алмаз для отправки сообщения.`);
       return false;
     }
     
@@ -96,7 +97,7 @@ class ChatManager {
         
         // If server returns 400, it means not enough diamonds
         if (error.status === 400) {
-          alert('Недостаточно алмазов! Нужно 10 алмазов для отправки сообщения.');
+          alert(`Недостаточно алмазов! Нужно ${this.MESSAGE_COST} алмаз для отправки сообщения.`);
         }
       }
     });
