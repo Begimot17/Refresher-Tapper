@@ -69,7 +69,7 @@ class AchievementManager {
         icon: '🪙',
         requirement: 100000,
         type: 'coins',
-        reward: 5,
+        reward: 10,
         unlocked: false
       },
       {
@@ -79,7 +79,7 @@ class AchievementManager {
         icon: '📈',
         requirement: 10,
         type: 'level',
-        reward: 2,
+        reward: 5,
         unlocked: false
       },
       {
@@ -89,7 +89,7 @@ class AchievementManager {
         icon: '📈',
         requirement: 50,
         type: 'level',
-        reward: 4,
+        reward: 8,
         unlocked: false
       },
       {
@@ -99,7 +99,7 @@ class AchievementManager {
         icon: '📈',
         requirement: 100,
         type: 'level',
-        reward: 10,
+        reward: 15,
         unlocked: false
       },
       {
@@ -109,7 +109,7 @@ class AchievementManager {
         icon: '🎭',
         requirement: 1,
         type: 'characters',
-        reward: 5,
+        reward: 10,
         unlocked: false
       }
     ];

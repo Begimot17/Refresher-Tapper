@@ -6,55 +6,52 @@ class UpgradeManager {
       {
         id: 'multiplier',
         name: 'Самогон',
-        description:
-          'Увеличивает эффективность вашего клика. Чем больше самогона, тем больше очков и монет!',
-        baseCost: 50,
-        costIncrease: 50,
+        description: 'Увеличивает количество очков за клик. Чем больше самогона, тем крепче удар! 🍺',
+        icon: '🍺',
+        baseCost: 25,
+        costIncrease: 35,
         effect: 'multiplier',
-        maxLevel: 2500,
-        icon: '🍺'
+        maxLevel: 3000
       },
       {
         id: 'auto-click',
         name: 'Волга',
-        description: 'Автоматически кликает за вас. Волга работает без устали, пока вы отдыхаете!',
-        baseCost: 100,
-        costIncrease: 100,
+        description: 'Автоматически кликает и дает +15% к очкам за каждый уровень. Каждый уровень делает клики на 3% быстрее! Волга работает, пока ты отдыхаешь! 🏎️',
+        icon: '🏎️',
+        baseCost: 75,
+        costIncrease: 75,
         effect: 'autoClicker',
-        maxLevel: 1000,
-        icon: '🏎️'
+        maxLevel: 1500
       },
       {
         id: 'critical-hit',
         name: 'Подик',
-        description:
-          'Шанс нанести мощный удар, который приносит в разы больше очков и монет. Подик — это сила!',
-        baseCost: 500,
-        costIncrease: 500,
+        description: 'Увеличивает шанс и силу критического удара. Подик — это не просто удар, это искусство! 💥',
+        icon: '💥',
+        baseCost: 250,
+        costIncrease: 250,
         effect: 'criticalHit',
-        maxLevel: 500,
-        icon: '💥'
+        maxLevel: 750
       },
       {
         id: 'coin-bonus',
         name: 'База',
-        description: 'Увеличивает количество монет за клик. База — это надежный источник дохода!',
-        baseCost: 10000,
-        costIncrease: 2500,
+        description: 'Увеличивает количество монет за клик. База — это надежный источник дохода, как в реальной жизни! 💰',
+        icon: '💰',
+        baseCost: 5000,
+        costIncrease: 1500,
         effect: 'coinBonus',
-        maxLevel: 250,
-        icon: '💰'
+        maxLevel: 400
       },
       {
         id: 'xp-boost',
         name: 'Снюс',
-        description:
-          'Увеличивает количество опыта за клик. Снюс заряжает энергией и помогает быстрее расти!',
-        baseCost: 25000,
-        costIncrease: 10000,
+        description: 'Увеличивает количество опыта за клик на 15% за каждый уровень. Снюс заряжает энергией и помогает быстрее расти! 📦',
+        icon: '📦',
+        baseCost: 10000,
+        costIncrease: 5000,
         effect: 'xpBoost',
-        maxLevel: 250,
-        icon: '📦'
+        maxLevel: 400
       }
     ];
   }
@@ -79,11 +76,12 @@ class UpgradeManager {
   increaseUpgradeLevel(upgradeId) {
     switch (upgradeId) {
       case 'multiplier':
-        this.game.multiplier += 1;
         this.game.multiplierCount += 1;
+        this.game.multiplier += 1;
         break;
       case 'auto-click':
         this.game.autoClickerCount += 1;
+        this.applyAutoClickerEffect();
         break;
       case 'critical-hit':
         this.game.criticalHitCount += 1;
@@ -116,14 +114,80 @@ class UpgradeManager {
   }
   
   applyAutoClickerEffect() {
-    if (!this.game.autoClickerActive) {
-      this.game.autoClickerActive = true;
-      this.game.autoClickerInterval = setInterval(() => {
-        this.game.updateScore(this.game.multiplier + this.game.autoClickerCount);
-        this.game.updateCoins(this.game.multiplier + this.game.autoClickerCount);
+    // Clear any existing interval to prevent multiple auto-clickers
+    if (this.autoClickerInterval) {
+      clearInterval(this.autoClickerInterval);
+      this.autoClickerInterval = null;
+    }
+    
+    // Get auto-clicker level
+    const autoClickerLevel = this.getUpgradeLevel('auto-click');
+    
+    // Only set up interval if auto-clicker level is greater than 0
+    if (autoClickerLevel > 0) {
+      // Set up interval based on auto-clicker level (faster with higher levels)
+      // Each level makes the auto-clicker 3% faster, with a minimum of 300ms
+      const intervalTime = Math.max(1000 - (autoClickerLevel * 30), 300);
+      
+      this.autoClickerInterval = setInterval(() => {
+        // Calculate base points with multiplier
+        const basePoints = Math.floor(this.game.multiplier);
+        
+        // Check for critical hit
+        const criticalChance = this.getUpgradeLevel('critical-hit') * 0.05; // 5% шанс за уровень
+        const isCritical = Math.random() < criticalChance;
+        const criticalMultiplier = isCritical ? 2 : 1;
+        
+        // Get the tap circle element
+        const circle = document.getElementById('tap-circle');
+        const circleRect = circle.getBoundingClientRect();
+        
+        // Calculate random position within the circle
+        const centerX = circleRect.width / 2;
+        const centerY = circleRect.height / 2;
+        const radius = Math.min(centerX, centerY) * 0.8; // 80% of radius to keep within circle
+        
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * radius;
+        const x = centerX + Math.cos(angle) * distance;
+        const y = centerY + Math.sin(angle) * distance;
+        
+        // Add auto-clicker bonus based on level
+        // Each level gives a 15% boost to points
+        const autoClickerBoost = 1 + (autoClickerLevel * 0.15);
+        
+        // Calculate final points with all multipliers
+        const finalPoints = Math.floor(basePoints * criticalMultiplier * autoClickerBoost);
+        
+        // Create visual effect
+        if (isCritical) {
+          this.game.uiManager.createCriticalHitEffect(x, y);
+        } else {
+          this.game.uiManager.createTapEffect(x, y);
+        }
+        
+        // Update score and coins
+        this.game.updateScore(finalPoints);
+        
+        // Add experience points
+        const xpBoost = 1 + (this.getUpgradeLevel('xp-boost') * 0.15); // 15% за уровень
+        const levelScaling = 1 + (this.game.level * 0.03); // 3% больше опыта за каждый уровень
+        const xpGained = Math.max(1, Math.floor(0.15 * levelScaling * xpBoost)); // Гарантируем минимум 1 очко опыта
+        
+        this.game.xp += xpGained;
+        
+        // Check for level up
         this.game.checkLevelUp();
+        
+        // Increment total clicks counter
+        this.game.totalClicks++;
+        
+        // Check for achievements
+        this.game.achievementManager.checkAchievements();
+        
+        // Update UI
         this.game.uiManager.updateUI();
-      }, 1000);
+      }, intervalTime);
     }
   }
   
@@ -148,7 +212,15 @@ class UpgradeManager {
     if (this.game.coins >= cost) {
       this.game.coins -= cost;
       this.increaseUpgradeLevel(upgradeId); // Увеличиваем уровень улучшения
-      this.applyUpgradeEffect(upgrade.effect); // Применяем эффект улучшения
+      
+      // Применяем эффект улучшения
+      if (upgradeId === 'auto-click') {
+        // Для автокликера сразу применяем эффект
+        this.applyAutoClickerEffect();
+      } else {
+        this.applyUpgradeEffect(upgrade.effect);
+      }
+      
       this.game.uiManager.updateUI(); // Обновляем интерфейс
     } else {
       this.game.uiManager.showError('Недостаточно монет для покупки улучшения.');

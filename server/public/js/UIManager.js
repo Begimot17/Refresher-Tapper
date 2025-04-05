@@ -136,11 +136,7 @@ class UIManager {
   
   updateCharacterDescription() {
     const character = this.game.selectedCharacter || this.game.characterManager.getCharacterForLevel(this.game.level);
-    const descriptionElement = document.getElementById('character-description');
-    if (character && descriptionElement) {
-      const descriptionText = `${character.name}\n${character.description || 'Описание отсутствует.'}`;
-      descriptionElement.innerHTML = descriptionText.replace(/\n/g, '<br>'); // Заменяем \n на <br>
-    }
+    $('#character-description').text(character.description);
   }
   
   playTapSound() {
@@ -151,8 +147,13 @@ class UIManager {
   createTapEffect(x, y) {
     const $effect = $('<div>')
       .addClass('tap-effect')
-      .css({left: `${x}px`, top: `${y}px`});
-    $('body').append($effect);
+      .css({
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -50%)'
+      });
+    $('#tap-circle').append($effect);
     setTimeout(() => $effect.remove(), 1000);
   }
   
@@ -160,8 +161,13 @@ class UIManager {
     const $effect = $('<div>')
       .addClass('critical-hit-effect')
       .text('💥 Критический удар!')
-      .css({left: `${x}px`, top: `${y}px`});
-    $('body').append($effect);
+      .css({
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -50%)'
+      });
+    $('#tap-circle').append($effect);
     setTimeout(() => $effect.remove(), 1000);
   }
   
@@ -210,31 +216,117 @@ class UIManager {
   }
   
   openCharacterModal() {
+    console.log('Opening character modal');
     this.closeAllModals();
+    
     const nextUnlockLevel = this.game.characterManager.getNextUnlockLevel(this.game.level);
+    const characterList = $('#character-list');
+    characterList.empty();
     
-    const $characterList = $('#character-list').empty();
-    
-    this.game.characterManager.characters.forEach(character => {
-      const $characterItem = $('<div>')
-        .addClass('character-item')
-        .toggleClass('locked', character.entryLevel > this.game.level)
-        .html(
-          character.entryLevel <= this.game.level
-            ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span>`
-            : `<div class="locked-character"></div><span>???</span><small>Откроется на уровне ${character.entryLevel}</small>`
-        )
-        .on('click', () => character.entryLevel <= this.game.level && this.selectCharacter(character));
-      
-      $characterList.append($characterItem);
+    // Add regular characters
+    this.game.characterManager.getAvailableCharacters().forEach(character => {
+      const isSelected = this.game.selectedCharacter && character.id === this.game.selectedCharacter.id;
+      const characterItem = $(`
+        <div class="character-item ${isSelected ? 'selected' : ''}" data-id="${character.id}">
+          <img src="${character.image}" alt="${character.name}">
+          <span>${character.name}</span>
+        </div>
+      `);
+      characterList.append(characterItem);
     });
     
-    $('#next-unlock-info').text(
-      nextUnlockLevel
-        ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
-        : 'Все персонажи открыты'
-    );
     
+    // Show next unlock level info if available - moved here to be before premium characters
+    if (nextUnlockLevel) {
+      const nextUnlockInfo = $(`
+        <div class="next-unlock-info">
+          <p>Следующий персонаж будет доступен на уровне ${nextUnlockLevel}</p>
+        </div>
+      `);
+      characterList.append(nextUnlockInfo);
+    }
+    // Add divider between regular and premium characters
+    characterList.append('<div class="character-divider"><span>Премиум персонажи</span></div>');
+    
+    // Add premium characters in a horizontal layout
+    const premiumCharactersContainer = $('<div class="premium-characters-container"></div>');
+    this.game.characterManager.getAllPremiumCharacters().forEach(character => {
+      const isSelected = this.game.selectedCharacter && character.id === this.game.selectedCharacter.id;
+      const isPurchased = this.game.characterManager.isPremiumCharacterPurchased(character.id);
+      const characterItem = $(`
+        <div class="character-item premium-character ${isSelected ? 'selected' : ''} ${isPurchased ? 'purchased' : ''}" data-id="${character.id}">
+          ${isPurchased 
+            ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span><div class="character-bonus">${character.bonus}</div>` 
+            : `<div class="locked-character"></div><span>${character.name}</span><div class="character-price">💎 ${character.price}</div><div class="character-bonus">${character.bonus}</div>`
+          }
+        </div>
+      `);
+      premiumCharactersContainer.append(characterItem);
+    });
+    characterList.append(premiumCharactersContainer);
+    
+    // Add click handlers for character selection
+    $('.character-item').on('click', (e) => {
+      const characterId = $(e.currentTarget).data('id');
+      const character = this.game.characterManager.getCharacterById(characterId);
+      
+      if (character) {
+        if (this.game.characterManager.isPremiumCharacter(characterId)) {
+          if (!this.game.characterManager.isPremiumCharacterPurchased(characterId)) {
+            if (this.game.diamonds >= character.price) {
+              console.log('Purchasing premium character:', character);
+              console.log('Current diamonds:', this.game.diamonds);
+              console.log('Character price:', character.price);
+              
+              // Вычитаем алмазы
+              this.game.diamonds -= character.price;
+              console.log('Diamonds after purchase:', this.game.diamonds);
+              
+              // Добавляем персонажа в список купленных
+              this.game.characterManager.addPurchasedPremiumCharacter(characterId);
+              console.log('Character added to purchased list');
+              
+              // Выбираем персонажа
+              this.game.selectedCharacter = character;
+              console.log('Selected character updated:', this.game.selectedCharacter);
+              
+              this.updateImage();
+              this.updateUI();
+              this.closeAllModals();
+              this.showError(`Персонаж ${character.name} куплен!`);
+              
+              // Сохраняем прогресс после покупки персонажа
+              console.log('Saving progress after character purchase');
+              this.game.progressManager.saveProgress();
+              console.log('Progress saved');
+            } else {
+              this.showError('Недостаточно алмазов!');
+            }
+          } else {
+            // Выбор уже купленного премиум-персонажа
+            console.log('Selecting already purchased premium character:', character);
+            this.game.selectedCharacter = character;
+            this.updateImage();
+            this.updateUI();
+            this.closeAllModals();
+            // Сохраняем прогресс после выбора персонажа
+            console.log('Saving progress after character selection');
+            this.game.progressManager.saveProgress();
+            console.log('Progress saved');
+          }
+        } else {
+          // Выбор обычного персонажа
+          this.game.selectedCharacter = character;
+          this.updateImage();
+          this.updateUI();
+          this.closeAllModals();
+          // Сохраняем прогресс после выбора персонажа
+          this.game.progressManager.saveProgress();
+        }
+      }
+    });
+    
+    console.log('Showing character modal');
     $('#character-modal').show();
   }
   
@@ -248,6 +340,32 @@ class UIManager {
     this.updateCharacterDescription();
     this.closeCharacterModal();
     this.game.progressManager.saveProgress();
+  }
+  
+  // Метод для покупки премиум-персонажа
+  purchasePremiumCharacter(character) {
+    if (this.game.diamonds >= character.price) {
+      // Вычитаем алмазы
+      this.game.diamonds -= character.price;
+      
+      // Добавляем персонажа в список купленных
+      this.game.characterManager.addPurchasedPremiumCharacter(character.id);
+      
+      // Выбираем персонажа
+      this.selectCharacter(character);
+      
+      // Показываем уведомление
+      this.showPopup('coins-popup', `-${character.price} 💎`);
+      this.showPopup('character-popup', `Получен персонаж: ${character.name}!`);
+      
+      // Сохраняем прогресс
+      this.game.progressManager.saveProgress();
+      
+      // Обновляем UI
+      this.updateUI();
+    } else {
+      this.showError(`Недостаточно алмазов! Нужно ${character.price} 💎`);
+    }
   }
   
   openLeaderboard() {
@@ -393,7 +511,8 @@ class UIManager {
     
     // Character button
     $('#character-button').on('click', () => {
-      this.showCharacterModal();
+      console.log('Character button clicked');
+      this.openCharacterModal();
     });
     
     // Leaderboard button
@@ -487,7 +606,10 @@ class UIManager {
   }
   
   closeAllModals() {
+    console.log('Closing all modals');
     $('.modal').hide();
+    $('.custom-confirm-modal').hide();
+    console.log('All modals closed');
   }
   
   showShopModal() {
@@ -565,35 +687,6 @@ class UIManager {
   showMenuModal() {
     this.closeAllModals();
     $('#menu-modal').show();
-  }
-  
-  showCharacterModal() {
-    this.closeAllModals();
-    const nextUnlockLevel = this.game.characterManager.getNextUnlockLevel(this.game.level);
-    
-    const $characterList = $('#character-list').empty();
-    
-    this.game.characterManager.characters.forEach(character => {
-      const $characterItem = $('<div>')
-        .addClass('character-item')
-        .toggleClass('locked', character.entryLevel > this.game.level)
-        .html(
-          character.entryLevel <= this.game.level
-            ? `<img src="${character.image}" alt="${character.name}"><span>${character.name}</span>`
-            : `<div class="locked-character"></div><span>???</span><small>Откроется на уровне ${character.entryLevel}</small>`
-        )
-        .on('click', () => character.entryLevel <= this.game.level && this.selectCharacter(character));
-      
-      $characterList.append($characterItem);
-    });
-    
-    $('#next-unlock-info').text(
-      nextUnlockLevel
-        ? `Следующий персонаж откроется на уровне ${nextUnlockLevel}`
-        : 'Все персонажи открыты'
-    );
-    
-    $('#character-modal').show();
   }
   
   showAchievementsModal() {
@@ -680,6 +773,28 @@ class UIManager {
     // Auto-close after 5 seconds
     setTimeout(() => {
       $popup.fadeOut();
+    }, 5000);
+  }
+  
+  showLevelUpNotification(level, coinsEarned, diamondsEarned) {
+    // Создаем уведомление о повышении уровня
+    const $notification = $('<div>')
+      .addClass('level-up-notification')
+      .html(`
+        <h3>Поздравляем! 🎉</h3>
+        <p>Вы достигли ${level} уровня!</p>
+        <p>Получено монет: ${this.game.formatNumber(coinsEarned)} 🪙</p>
+        ${diamondsEarned > 0 ? `<p>Получен алмаз: ${diamondsEarned} 💎</p>` : ''}
+      `);
+    
+    // Добавляем уведомление на страницу
+    $('body').append($notification);
+    
+    // Удаляем уведомление через 5 секунд
+    setTimeout(() => {
+      $notification.fadeOut(500, function() {
+        $(this).remove();
+      });
     }, 5000);
   }
 } 

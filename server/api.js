@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema({
   xpBoostCount: { type: Number, default: 0 },
   selectedCharacterId: { type: Number, default: null },
   totalClicks: { type: Number, default: 0 },
+  purchasedPremiumCharacters: { type: [Number], default: [] },
   achievements: [{
     id: { type: String, required: true },
     unlocked: { type: Boolean, default: false }
@@ -80,6 +81,7 @@ app.post('/api/save', async (req, res) => {
       xpBoostCount: req.body.xpBoostCount,
       selectedCharacterId: req.body.selectedCharacterId,
       totalClicks: req.body.totalClicks,
+      purchasedPremiumCharacters: req.body.purchasedPremiumCharacters || [],
       achievements: req.body.achievements,
       lastUpdated: new Date()
     };
@@ -125,6 +127,7 @@ app.get('/api/load', async (req, res) => {
       xpBoostCount: user.xpBoostCount,
       selectedCharacterId: user.selectedCharacterId,
       totalClicks: user.totalClicks,
+      purchasedPremiumCharacters: user.purchasedPremiumCharacters || [],
       achievements: user.achievements
     });
   } catch (error) {

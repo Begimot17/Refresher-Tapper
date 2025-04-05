@@ -5,9 +5,10 @@ class Game {
     this.coins = 0;
     this.diamonds = 0;
     this.level = 1;
-    this.coinForLevel = 10;
-    this.scoreForLevel = 100;
+    this.coinForLevel = 25;
+    this.scoreForLevel = 150;
     this.xp = 0;
+    this.xpForLevel = 100;
     this.multiplier = 1;
     this.totalClicks = 0;
     this.consecutiveClicks = 0; // Track consecutive clicks
@@ -32,12 +33,15 @@ class Game {
     this.baseCoinBonusMultiplier = 1;
     
     // Initialize
-    this.characterManager = new CharacterManager();
+    this.characterManager = new CharacterManager(this);
     this.upgradeManager = new UpgradeManager(this);
     this.uiManager = new UIManager(this);
     this.progressManager = new ProgressManager(this);
     this.chatManager = new ChatManager(this);
     this.achievementManager = new AchievementManager(this);
+    
+    // Initialize auto-clicker
+    this.upgradeManager.applyAutoClickerEffect();
     
     // Initialize Telegram WebApp
     try {
@@ -70,6 +74,12 @@ class Game {
     this.uiManager.updateImage();
     this.uiManager.updateUI();
     
+    // Инициализируем автокликер, если он куплен
+    if (this.autoClickerCount > 0) {
+      console.log('Initializing auto-clicker...');
+      this.upgradeManager.applyAutoClickerEffect();
+    }
+    
     // Устанавливаем обработчики событий
     console.log('Setting up event listeners...');
     this.setupEventListeners();
@@ -90,6 +100,40 @@ class Game {
     tapCircle.addEventListener('click', this.handleTap.bind(this));
     tapCircle.addEventListener('touchstart', this.handleTouchStart.bind(this));
     tapCircle.addEventListener('touchend', this.handleTouchEnd.bind(this));
+    
+    // Add double-tap event listener to flip the circle back
+    let lastTapTime = 0;
+    tapCircle.addEventListener('click', (event) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+      
+      if (tapLength < 300 && tapLength > 0) {
+        // Double tap detected
+        if (tapCircle.classList.contains('flipped')) {
+          tapCircle.classList.remove('flipped');
+          this.uiManager.updateCharacterDescription();
+        }
+      }
+      
+      lastTapTime = currentTime;
+    });
+    
+    // Add double-tap for touch devices
+    let lastTouchTime = 0;
+    tapCircle.addEventListener('touchend', (event) => {
+      const currentTime = new Date().getTime();
+      const touchLength = currentTime - lastTouchTime;
+      
+      if (touchLength < 300 && touchLength > 0) {
+        // Double tap detected
+        if (tapCircle.classList.contains('flipped')) {
+          tapCircle.classList.remove('flipped');
+          this.uiManager.updateCharacterDescription();
+        }
+      }
+      
+      lastTouchTime = currentTime;
+    });
     
     // Logo click event listener for consecutive clicks achievement
     const logo = document.getElementById('main-title');
@@ -122,59 +166,48 @@ class Game {
   }
   
   handleTap(event) {
-    // Get tap position relative to the tap circle
+    // Получаем координаты клика
     const rect = event.target.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    // Get tap circle position relative to viewport
-    const circleRect = document.getElementById('tap-circle').getBoundingClientRect();
+    // Создаем эффект клика
+    this.uiManager.createTapEffect(x, y);
     
-    // Calculate absolute position for the effect
-    const effectX = circleRect.left + x;
-    const effectY = circleRect.top + y;
-    
-    // Increment total clicks counter
-    this.totalClicks++;
-    
-    // Calculate base points
-    let points = 1 * this.multiplier;
-    
-    // Check for critical hit
-    const criticalHitChance = this.baseCriticalHitChance + (this.criticalHitCount * 0.05);
-    const isCriticalHit = Math.random() < criticalHitChance;
-    
-    if (isCriticalHit) {
-      points *= this.baseCriticalHitMultiplier + (this.criticalHitCount * 0.5);
-      this.uiManager.createCriticalHitEffect(effectX, effectY);
-    } else {
-      this.uiManager.createTapEffect(effectX, effectY);
-    }
-    
-    // Update score
-    this.updateScore(points);
-    
-    // Add coins
-    const coinMultiplier = this.baseCoinBonusMultiplier + (this.coinBonusCount * 0.2);
-    const coinsAdded = Math.floor(points * coinMultiplier);
-    this.updateCoins(coinsAdded);
-    
-    // Add XP
-    const xpBoost = 1 + (this.xpBoostCount * 0.1);
-    const xpGained = Math.floor(points * xpBoost);
-    this.xp += xpGained;
-    
-    // Check for level up
-    this.checkLevelUp();
-    
-    // Play tap sound
+    // Воспроизводим звук
     this.uiManager.playTapSound();
     
-    // Check for achievements
-    this.achievementManager.checkAchievements();
+    // Увеличиваем счетчик кликов
+    this.totalClicks++;
     
-    // Update UI
-    this.uiManager.updateUI();
+    // Рассчитываем базовые очки
+    let points = this.multiplier;
+    
+    // Проверяем критический удар
+    const criticalChance = this.upgradeManager.getUpgradeLevel('Подик') * 0.05; // 5% шанс за уровень
+    const isCritical = Math.random() < criticalChance;
+    
+    if (isCritical) {
+      // Критический удар
+      points *= 2;
+      this.uiManager.createCriticalHitEffect(x, y);
+    }
+    
+    // Обновляем счет и монеты
+    this.updateScore(points);
+    
+    // Добавляем опыт
+    const xpBoost = 1 + (this.upgradeManager.getUpgradeLevel('Снюс') * 0.15); // 15% за уровень
+    const levelScaling = 1 + (this.level * 0.03); // 3% больше опыта за каждый уровень
+    const xpGained = Math.max(1, Math.floor(0.15 * levelScaling * xpBoost)); // Гарантируем минимум 1 очко опыта
+    
+    this.xp += xpGained;
+    
+    // Проверяем повышение уровня
+    this.checkLevelUp();
+    
+    // Применяем эффект авто-кликера
+    this.upgradeManager.applyAutoClickerEffect();
   }
   
   handleTouchStart(event) {
@@ -209,10 +242,14 @@ class Game {
   }
   
   updateScore(points) {
-    this.xp += points;
-    this.score += points;
-    this.uiManager.updateScoreDisplay();
-    this.uiManager.showPopup('score-popup', points);
+    // Обновляем счет
+    this.score += Math.max(1, Math.floor(points));
+    
+    // Обновляем монеты
+    this.coins += Math.max(1, Math.floor(points));
+    
+    // Обновляем интерфейс
+    this.uiManager.updateUI();
   }
   
   updateCoins(coinsAdded) {
@@ -228,82 +265,77 @@ class Game {
   }
   
   checkLevelUp() {
-    const levelsGained = Math.floor(this.xp / (this.level * this.scoreForLevel));
-    if (levelsGained > 0) {
-      const totalXPNeeded = this.level * this.scoreForLevel * levelsGained;
-      this.xp -= totalXPNeeded;
-      this.coins += this.level * this.coinForLevel * levelsGained;
+    // Проверяем, достаточно ли опыта для повышения уровня
+    if (this.xp >= this.xpForLevel) {
+      // Повышаем уровень
+      this.level++;
       
-      // Award diamonds for leveling up
-      this.diamonds += levelsGained;
-      console.log('Diamonds awarded for level up:', levelsGained, 'New total:', this.diamonds);
+      // Сбрасываем опыт и увеличиваем требования для следующего уровня
+      this.xp = 0;
+      this.xpForLevel = Math.floor(this.xpForLevel * 1.1); // Уменьшаем увеличение требуемого опыта с 15% до 10%
       
-      // Store the current level before updating
-      const oldLevel = this.level;
+      // Начисляем монеты за уровень
+      const coinsEarned = this.coinForLevel;
+      this.coins += coinsEarned;
       
-      // Update the level
-      this.updateLevel(levelsGained);
-      
-      // Check if we've reached a level that unlocks a new character
-      const newLevel = this.level;
-      const oldCharacter = this.characterManager.getCharacterForLevel(oldLevel);
-      const newCharacter = this.characterManager.getCharacterForLevel(newLevel);
-      
-      // Only show the new character popup if we've unlocked a new character
-      if (newCharacter && (!oldCharacter || newCharacter.id !== oldCharacter.id)) {
-        this.uiManager.showNewCharacterPopup(newCharacter);
+      // Начисляем алмазы только за каждый 5-й уровень
+      let diamondsEarned = 0;
+      if (this.level % 5 === 0) {
+        diamondsEarned = 1;
+        this.diamonds += diamondsEarned;
       }
       
-      this.uiManager.showLevelUpPopup();
+      // Показываем уведомление о повышении уровня
+      this.uiManager.showLevelUpNotification(this.level, coinsEarned, diamondsEarned);
+      
+      // Обновляем изображение персонажа
+      this.uiManager.updateImage();
+      
+      // Проверяем достижения
+      this.achievementManager.checkAchievements();
+      
+      // Обновляем интерфейс
       this.uiManager.updateUI();
       
-      // Save progress after level up
+      // Сохраняем прогресс
       this.progressManager.saveProgress();
     }
   }
   
   resetProgress() {
-    // Clear auto-save interval
-    if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval);
+    // Очищаем интервал автокликера
+    if (this.upgradeManager.autoClickerInterval) {
+      clearInterval(this.upgradeManager.autoClickerInterval);
+      this.upgradeManager.autoClickerInterval = null;
     }
     
-    // Reset all game state
+    // Сбрасываем все значения
     this.score = 0;
     this.coins = 0;
     this.diamonds = 0;
     this.level = 1;
+    this.coinForLevel = 25;
+    this.scoreForLevel = 150;
     this.xp = 0;
+    this.xpForLevel = 100;
     this.multiplier = 1;
+    this.totalClicks = 0;
+    
+    // Сбрасываем улучшения
     this.multiplierCount = 0;
     this.autoClickerCount = 0;
     this.criticalHitCount = 0;
     this.coinBonusCount = 0;
     this.xpBoostCount = 0;
-    this.totalClicks = 0;
-    this.consecutiveClicks = 0;
     
-    // Reset character
-    this.selectedCharacter = this.characterManager.getCharacterForLevel(1);
-    
-    // Reset achievements
-    this.achievementManager.resetAchievements();
-    
-    // Update UI
+    // Обновляем интерфейс
     this.uiManager.updateUI();
-    this.uiManager.updateImage();
     
-    // Save reset progress
+    // Сохраняем прогресс
     this.progressManager.saveProgress();
     
-    // Restart auto-save interval
-    this.autoSaveInterval = setInterval(() => {
-      this.progressManager.saveProgress();
-      console.log('Auto-saving progress...');
-    }, 5 * 60 * 1000);
-    
-    // Show confirmation message
-    this.uiManager.showError('Прогресс успешно обнулен!');
+    // Показываем уведомление
+    this.uiManager.showError('Прогресс успешно сброшен!');
   }
   
   formatNumber(number) {

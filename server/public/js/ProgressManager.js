@@ -9,6 +9,7 @@ class ProgressManager {
     // Check cooldown
     const now = Date.now();
     if (now - this.lastSaveTime < this.saveCooldown) {
+      console.log('Save cooldown active, skipping save');
       return;
     }
     this.lastSaveTime = now;
@@ -46,11 +47,14 @@ class ProgressManager {
       xpBoostCount: this.game.xpBoostCount,
       selectedCharacterId: this.game.selectedCharacter ? this.game.selectedCharacter.id : null,
       totalClicks: this.game.totalClicks,
+      purchasedPremiumCharacters: this.game.characterManager.getPurchasedPremiumCharacters(),
       achievements: this.game.achievementManager.achievements.map(achievement => ({
         id: achievement.id,
         unlocked: achievement.unlocked
       }))
     };
+    
+    console.log('Saving progress to server:', progress);
     
     // Save to localStorage as backup
     this.saveToLocalStorage();
@@ -64,10 +68,12 @@ class ProgressManager {
         'X-Telegram-Init-Data': Telegram.WebApp.initData
       },
       success: (response) => {
-        console.log('Progress saved successfully:', response);
+        console.log('Progress saved successfully to server:', response);
+        // Сохраняем еще раз в localStorage после успешного сохранения на сервер
+        this.saveToLocalStorage();
       },
       error: (error) => {
-        console.error('Error saving progress:', error);
+        console.error('Error saving progress to server:', error);
         // Only show error if it's not a network error
         if (error.status !== 0) {
           this.game.uiManager.showError('Ошибка сохранения. Прогресс сохранен локально.');
@@ -78,6 +84,10 @@ class ProgressManager {
   
   saveToLocalStorage() {
     try {
+      // Получаем список купленных премиум-персонажей
+      const purchasedPremiumCharacters = this.game.characterManager.getPurchasedPremiumCharacters();
+      console.log('Saving purchased premium characters to localStorage:', purchasedPremiumCharacters);
+      
       const progress = {
         score: this.game.score,
         coins: this.game.coins,
@@ -92,15 +102,17 @@ class ProgressManager {
         xpBoostCount: this.game.xpBoostCount,
         selectedCharacterId: this.game.selectedCharacter ? this.game.selectedCharacter.id : null,
         totalClicks: this.game.totalClicks,
+        purchasedPremiumCharacters: purchasedPremiumCharacters,
         achievements: this.game.achievementManager.achievements.map(achievement => ({
           id: achievement.id,
           unlocked: achievement.unlocked
         }))
       };
       
+      console.log('Saving progress to localStorage:', progress);
       localStorage.setItem('gameData', JSON.stringify(progress));
       localStorage.setItem('lastSaveTime', Date.now().toString());
-      console.log('Progress saved to localStorage');
+      console.log('Progress saved to localStorage successfully');
     } catch (e) {
       console.error('Failed to save to localStorage:', e);
     }
@@ -155,22 +167,58 @@ class ProgressManager {
           this.game.xpBoostCount = data.xpBoostCount || 0;
           this.game.totalClicks = data.totalClicks || 0;
           
-          // Загружаем выбранного персонажа
+          // Сначала загружаем купленных премиум-персонажей
+          console.log('Checking for purchasedPremiumCharacters in server response:', data.purchasedPremiumCharacters);
+          if (data.purchasedPremiumCharacters && Array.isArray(data.purchasedPremiumCharacters)) {
+            console.log('Loading purchased premium characters from server:', data.purchasedPremiumCharacters);
+            this.game.characterManager.loadPurchasedPremiumCharacters(data.purchasedPremiumCharacters);
+            console.log('Loaded purchased premium characters from server');
+          } else {
+            console.warn('No purchasedPremiumCharacters found in server response or it is not an array');
+            console.log('Type of purchasedPremiumCharacters:', typeof data.purchasedPremiumCharacters);
+          }
+          
+          // Затем загружаем выбранного персонажа
           if (data.selectedCharacterId) {
+            console.log('Loading selected character:', data.selectedCharacterId);
             const character = this.game.characterManager.getCharacterById(data.selectedCharacterId);
-            if (character && this.game.level >= character.entryLevel) {
-              // Если персонаж существует и уровень игрока достаточен, используем его
-              this.game.selectedCharacter = character;
-              console.log(`Loaded character from server: ${character.name} (ID: ${character.id})`);
+            
+            if (character) {
+              // Проверяем, является ли персонаж премиум-персонажем
+              const isPremium = this.game.characterManager.isPremiumCharacter(character.id);
+              console.log(`Character ${character.name} is premium:`, isPremium);
+              
+              if (isPremium) {
+                // Для премиум-персонажа проверяем, куплен ли он
+                const isPurchased = this.game.characterManager.isPremiumCharacterPurchased(character.id);
+                console.log(`Premium character ${character.name} is purchased:`, isPurchased);
+                
+                if (isPurchased) {
+                  this.game.selectedCharacter = character;
+                  console.log(`Selected premium character: ${character.name}`);
+                } else {
+                  // Если премиум-персонаж не куплен, выбираем персонажа по уровню
+                  this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
+                  console.log(`Premium character ${character.name} not purchased, using ${this.game.selectedCharacter.name}`);
+                }
+              } else if (this.game.level >= character.entryLevel) {
+                // Для обычного персонажа проверяем уровень
+                this.game.selectedCharacter = character;
+                console.log(`Selected regular character: ${character.name}`);
+              } else {
+                // Если уровень недостаточен, выбираем персонажа по уровню
+                this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
+                console.log(`Character ${character.name} not available for level ${this.game.level}, using ${this.game.selectedCharacter.name}`);
+              }
             } else {
-              // Иначе выбираем персонажа, соответствующего текущему уровню
+              // Если персонаж не найден, выбираем персонажа по уровню
               this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
-              console.log(`Character ${data.selectedCharacterId} not available for level ${this.game.level}, using ${this.game.selectedCharacter.name}`);
+              console.log(`Character ${data.selectedCharacterId} not found, using ${this.game.selectedCharacter.name}`);
             }
           } else {
-            // Если персонаж не был сохранен, выбираем персонажа, соответствующего текущему уровню
+            // Если персонаж не был сохранен, выбираем персонажа по уровню
             this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
-            console.log(`No saved character in server data, using ${this.game.selectedCharacter.name} for level ${this.game.level}`);
+            console.log(`No saved character, using ${this.game.selectedCharacter.name} for level ${this.game.level}`);
           }
           
           // Загружаем достижения
@@ -234,22 +282,58 @@ class ProgressManager {
         this.game.xpBoostCount = gameData.xpBoostCount || 0;
         this.game.totalClicks = gameData.totalClicks || 0;
         
-        // Загружаем выбранного персонажа
+        // Сначала загружаем купленных премиум-персонажей
+        console.log('Checking for purchasedPremiumCharacters in localStorage data:', gameData.purchasedPremiumCharacters);
+        if (gameData.purchasedPremiumCharacters && Array.isArray(gameData.purchasedPremiumCharacters)) {
+          console.log('Loading purchased premium characters from localStorage:', gameData.purchasedPremiumCharacters);
+          this.game.characterManager.loadPurchasedPremiumCharacters(gameData.purchasedPremiumCharacters);
+          console.log('Loaded purchased premium characters from localStorage');
+        } else {
+          console.warn('No purchasedPremiumCharacters found in localStorage data or it is not an array');
+          console.log('Type of purchasedPremiumCharacters:', typeof gameData.purchasedPremiumCharacters);
+        }
+        
+        // Затем загружаем выбранного персонажа
         if (gameData.selectedCharacterId) {
+          console.log('Loading selected character:', gameData.selectedCharacterId);
           const character = this.game.characterManager.getCharacterById(gameData.selectedCharacterId);
-          if (character && this.game.level >= character.entryLevel) {
-            // Если персонаж существует и уровень игрока достаточен, используем его
-            this.game.selectedCharacter = character;
-            console.log(`Loaded character from localStorage: ${character.name} (ID: ${character.id})`);
+          
+          if (character) {
+            // Проверяем, является ли персонаж премиум-персонажем
+            const isPremium = this.game.characterManager.isPremiumCharacter(character.id);
+            console.log(`Character ${character.name} is premium:`, isPremium);
+            
+            if (isPremium) {
+              // Для премиум-персонажа проверяем, куплен ли он
+              const isPurchased = this.game.characterManager.isPremiumCharacterPurchased(character.id);
+              console.log(`Premium character ${character.name} is purchased:`, isPurchased);
+              
+              if (isPurchased) {
+                this.game.selectedCharacter = character;
+                console.log(`Selected premium character: ${character.name}`);
+              } else {
+                // Если премиум-персонаж не куплен, выбираем персонажа по уровню
+                this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
+                console.log(`Premium character ${character.name} not purchased, using ${this.game.selectedCharacter.name}`);
+              }
+            } else if (this.game.level >= character.entryLevel) {
+              // Для обычного персонажа проверяем уровень
+              this.game.selectedCharacter = character;
+              console.log(`Selected regular character: ${character.name}`);
+            } else {
+              // Если уровень недостаточен, выбираем персонажа по уровню
+              this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
+              console.log(`Character ${character.name} not available for level ${this.game.level}, using ${this.game.selectedCharacter.name}`);
+            }
           } else {
-            // Иначе выбираем персонажа, соответствующего текущему уровню
+            // Если персонаж не найден, выбираем персонажа по уровню
             this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
-            console.log(`Character ${gameData.selectedCharacterId} not available for level ${this.game.level}, using ${this.game.selectedCharacter.name}`);
+            console.log(`Character ${gameData.selectedCharacterId} not found, using ${this.game.selectedCharacter.name}`);
           }
         } else {
-          // Если персонаж не был сохранен, выбираем персонажа, соответствующего текущему уровню
+          // Если персонаж не был сохранен, выбираем персонажа по уровню
           this.game.selectedCharacter = this.game.characterManager.getCharacterForLevel(this.game.level);
-          console.log(`No saved character in localStorage, using ${this.game.selectedCharacter.name} for level ${this.game.level}`);
+          console.log(`No saved character, using ${this.game.selectedCharacter.name} for level ${this.game.level}`);
         }
         
         // Загружаем достижения
