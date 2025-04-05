@@ -645,10 +645,41 @@ class UIManager {
       );
       
       $achievementItem.append($achievementContent);
+      
+      // Add click handler to prevent default behavior
+      $achievementItem.on('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
       $achievementsList.append($achievementItem);
     });
     
     // Force update UI to ensure all values are displayed correctly
     this.updateUI();
+  }
+  
+  showAchievementPopup(achievement) {
+    // Get the achievement popup element
+    const $popup = $('#achievement-popup');
+    
+    // Set the achievement details
+    $popup.find('.achievement-popup-icon').text(achievement.icon);
+    $popup.find('.achievement-popup-name').text(achievement.name);
+    $popup.find('.achievement-popup-description').text(achievement.description);
+    $popup.find('.achievement-popup-reward').text(`Награда: ${achievement.reward} 💎`);
+    
+    // Show the popup with a fade-in animation
+    $popup.fadeIn();
+    
+    // Close popup when clicking the close button
+    $popup.find('.achievement-popup-close').one('click', () => {
+      $popup.fadeOut();
+    });
+    
+    // Auto-close after 5 seconds
+    setTimeout(() => {
+      $popup.fadeOut();
+    }, 5000);
   }
 } 

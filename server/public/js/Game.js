@@ -10,6 +10,7 @@ class Game {
     this.xp = 0;
     this.multiplier = 1;
     this.totalClicks = 0;
+    this.consecutiveClicks = 0; // Track consecutive clicks
     
     // Upgrades
     this.multiplierCount = 0;
@@ -89,6 +90,10 @@ class Game {
     tapCircle.addEventListener('click', this.handleTap.bind(this));
     tapCircle.addEventListener('touchstart', this.handleTouchStart.bind(this));
     tapCircle.addEventListener('touchend', this.handleTouchEnd.bind(this));
+    
+    // Logo click event listener for consecutive clicks achievement
+    const logo = document.getElementById('main-title');
+    logo.addEventListener('click', this.handleLogoClick.bind(this));
     
     // Chat event listeners
     $('#chat-send').on('click', () => this.chatManager.sendMessage());
@@ -192,6 +197,17 @@ class Game {
     }
   }
   
+  handleLogoClick(event) {
+    // Increment consecutive clicks counter
+    this.consecutiveClicks++;
+    
+    // Check for achievements
+    this.achievementManager.checkAchievements();
+    
+    // Update UI
+    this.uiManager.updateUI();
+  }
+  
   updateScore(points) {
     this.xp += points;
     this.score += points;
@@ -265,6 +281,7 @@ class Game {
     this.coinBonusCount = 0;
     this.xpBoostCount = 0;
     this.totalClicks = 0;
+    this.consecutiveClicks = 0;
     
     // Reset character
     this.selectedCharacter = this.characterManager.getCharacterForLevel(1);

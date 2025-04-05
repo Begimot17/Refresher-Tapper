@@ -4,7 +4,7 @@ class AchievementManager {
     this.achievements = [
       {
         id: 'clicks_1000',
-        name: 'Начинающий кликер',
+        name: 'Кликер-новичок на минималках',
         description: 'Сделайте 1,000 кликов',
         icon: '👆',
         requirement: 1000,
@@ -14,7 +14,7 @@ class AchievementManager {
       },
       {
         id: 'clicks_10000',
-        name: 'Опытный кликер',
+        name: 'Палец-машина 3000',
         description: 'Сделайте 10,000 кликов',
         icon: '👆',
         requirement: 10000,
@@ -24,7 +24,7 @@ class AchievementManager {
       },
       {
         id: 'clicks_100000',
-        name: 'Мастер кликер',
+        name: 'Безумный кликомен',
         description: 'Сделайте 100,000 кликов',
         icon: '👆',
         requirement: 100000,
@@ -33,8 +33,18 @@ class AchievementManager {
         unlocked: false
       },
       {
+        id: 'consecutive_clicks_10',
+        name: 'Ниндзя-кликер',
+        description: 'Нажмите 10 раз подряд на логотип "Refresher Tapper"',
+        icon: '⚡',
+        requirement: 10,
+        type: 'consecutive_clicks',
+        reward: 25,
+        unlocked: false
+      },
+      {
         id: 'coins_1000',
-        name: 'Мелкий торговец',
+        name: 'Начинающий Скрудж Макдак',
         description: 'Накопите 1,000 монет',
         icon: '🪙',
         requirement: 1000,
@@ -44,7 +54,7 @@ class AchievementManager {
       },
       {
         id: 'coins_10000',
-        name: 'Крупный торговец',
+        name: 'Монетный дождь',
         description: 'Накопите 10,000 монет',
         icon: '🪙',
         requirement: 10000,
@@ -54,7 +64,7 @@ class AchievementManager {
       },
       {
         id: 'coins_100000',
-        name: 'Монетный магнат',
+        name: 'Повелитель золотых кругляшей',
         description: 'Накопите 100,000 монет',
         icon: '🪙',
         requirement: 100000,
@@ -64,7 +74,7 @@ class AchievementManager {
       },
       {
         id: 'level_10',
-        name: 'Новичок',
+        name: 'Подающий надежды тапер',
         description: 'Достигните 10 уровня',
         icon: '📈',
         requirement: 10,
@@ -74,7 +84,7 @@ class AchievementManager {
       },
       {
         id: 'level_50',
-        name: 'Опытный игрок',
+        name: 'Тап-мастер 5000',
         description: 'Достигните 50 уровня',
         icon: '📈',
         requirement: 50,
@@ -84,7 +94,7 @@ class AchievementManager {
       },
       {
         id: 'level_100',
-        name: 'Легенда',
+        name: 'Босс финального тапа',
         description: 'Достигните 100 уровня',
         icon: '📈',
         requirement: 100,
@@ -94,7 +104,7 @@ class AchievementManager {
       },
       {
         id: 'all_characters',
-        name: 'Коллекционер',
+        name: 'Собиратель всея персонажей',
         description: 'Разблокируйте всех персонажей',
         icon: '🎭',
         requirement: 1,
@@ -127,6 +137,9 @@ class AchievementManager {
               character => character.entryLevel <= this.game.level
             );
             requirementMet = allCharactersUnlocked;
+            break;
+          case 'consecutive_clicks':
+            requirementMet = this.game.consecutiveClicks >= achievement.requirement;
             break;
         }
         
