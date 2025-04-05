@@ -235,6 +235,17 @@ class UIManager {
       characterList.append(characterItem);
     });
     
+    // Add locked character placeholder if there's a next unlock level
+    if (nextUnlockLevel) {
+      const lockedCharacterItem = $(`
+        <div class="character-item locked" style="cursor: not-allowed;">
+          <div class="locked-character"></div>
+          <span>???</span>
+          <div class="locked-character-level">Level ${nextUnlockLevel}</div>
+        </div>
+      `);
+      characterList.append(lockedCharacterItem);
+    }
     
     // Show next unlock level info if available - moved here to be before premium characters
     if (nextUnlockLevel) {

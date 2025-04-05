@@ -108,7 +108,7 @@ class CharacterManager {
         id: 101,
         name: 'Дракон',
         price: 5,
-        image: 'images/dula.jpg',
+        image: 'images/dragon.png',
         sound: 'sounds/dula.mp3',
         description: '🔥 Мифическое существо, чьи клики сжигают всё на своём пути',
         bonus: '+5%'
@@ -117,7 +117,7 @@ class CharacterManager {
         id: 102,
         name: 'Робот',
         price: 10,
-        image: 'images/dula.jpg',
+        image: 'images/robot.jpg',
         sound: 'sounds/dula.mp3',
         description: '🤖 Механический кликер с точностью до миллисекунды',
         bonus: '+10%'
@@ -126,7 +126,7 @@ class CharacterManager {
         id: 103,
         name: 'Волшебник',
         price: 15,
-        image: 'images/dula.jpg',
+        image: 'images/magic.png',
         sound: 'sounds/dula.mp3',
         description: '🧙‍♂️ Мастер магии, чьи клики превращают монеты в алмазы',
         bonus: '+15%'
@@ -135,7 +135,7 @@ class CharacterManager {
         id: 104,
         name: 'Космонавт',
         price: 20,
-        image: 'images/dula.jpg',
+        image: 'images/cosmo.jpg',
         sound: 'sounds/dula.mp3',
         description: '🚀 Исследователь космоса, чьи клики достигают звёзд',
         bonus: '+20%'
@@ -144,7 +144,7 @@ class CharacterManager {
         id: 105,
         name: 'Динозавр',
         price: 25,
-        image: 'images/dula.jpg',
+        image: 'images/dino.jpg',
         sound: 'sounds/dula.mp3',
         description: '🦖 Древнее существо с невероятной силой кликов',
         bonus: '+25%'
