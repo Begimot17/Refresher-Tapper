@@ -12,26 +12,26 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <div class="game-container">
       <h1 id="main-title">🔥 Refresher Tapper 🔥</h1>
       <div class="score-board">
         <div class="score-item">
-          🔥 <span id="score">0</span>
+          <span class="score-label">🔥</span>
+          <span class="score-value" id="score">0</span>
           <span id="score-popup" class="popup"></span>
-          <span class="tooltip">Очки: Ваш текущий счёт</span>
         </div>
         <div class="score-item">
-          🪙 <span id="coins">0</span>
+          <span class="score-label">🪙</span>
+          <span class="score-value" id="coins">0</span>
           <span id="coins-popup" class="popup"></span>
-          <span class="tooltip">Монеты: Валюта для улучшений</span>
         </div>
         <div class="score-item">
-          📈 <span id="level">1</span>
-          <span id="level-popup" class="popup"></span>
-          <span class="tooltip">Уровень: Ваш прогресс</span>
+          <span class="score-label">💎</span>
+          <span class="score-value" id="diamonds">0</span>
+          <span id="diamonds-popup" class="popup"></span>
         </div>
       </div>
 
@@ -46,12 +46,11 @@
 
       <div class="shop">
         <div class="button-row">
-          <button class="btn" onclick="openShop()">🛒 Магазин</button>
-          <button class="btn" onclick="openCharacterModal()">🎭 Выбрать персонажа</button>
+          <button class="btn" id="shop-button">🛒 Магазин</button>
+          <button class="btn" id="character-button">🎭 Выбрать персонажа</button>
         </div>
         <div class="button-row">
-          <button class="btn" onclick="showLeaderboard()">🏆 Рекорды</button>
-          <!-- Кнопка для открытия меню -->
+          <button class="btn" id="leaderboard-button">🏆 Рекорды</button>
           <button class="btn" id="menu-button">🍔 Меню</button>
         </div>
       </div>
@@ -60,16 +59,15 @@
     <!-- Модальное окно для меню -->
     <div id="menu-modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeMenuModal()">&times;</span>
+        <span class="close">&times;</span>
         <h2>🍔 Меню</h2>
         <div class="menu-options">
-          <button class="btn" onclick="openProfile()">👤 Профиль</button>
-          <button class="btn" onclick="openAchievements()">🏅 Достижения</button>
-          <button class="btn" onclick="openChatModal()">💬 ЧатНя</button>
-          <button class="btn" id="reset-button" onclick="confirmResetProgress()">
-            🔄 Обнулить прогресс
-          </button>
-          <button class="btn" onclick="shareProgress()">📤 Поделиться</button>
+          <button class="btn" id="profile-button">👤 Профиль</button>
+          <button class="btn" id="achievements-button">🏅 Достижения</button>
+          <button class="btn" id="chat-button">💬 ЧатНя</button>
+          <button class="btn" id="save-button">💾 Сохранить прогресс</button>
+          <button class="btn" id="reset-button">🔄 Обнулить прогресс</button>
+          <button class="btn" id="share-button">📤 Поделиться</button>
         </div>
       </div>
     </div>
@@ -77,21 +75,21 @@
     <!-- Остальные модальные окна -->
     <div id="shop-modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeShop()">&times;</span>
+        <span class="close" id="close-shop">&times;</span>
         <h2>🛒 Магазин улучшений</h2>
         <div id="upgrades-list" class="upgrades-list"></div>
       </div>
     </div>
     <div id="character-modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeCharacterModal()">&times;</span>
+        <span class="close" id="close-character">&times;</span>
         <h2>🎭 Выберите персонажа</h2>
         <div id="character-list" class="character-list"></div>
       </div>
     </div>
     <div id="leaderboard-modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeLeaderboard()">&times;</span>
+        <span class="close" id="close-leaderboard">&times;</span>
         <h2>🏆 Таблица рекордов</h2>
         <ul id="leaderboard-list" class="leaderboard-list"></ul>
       </div>
@@ -108,21 +106,90 @@
     </div>
     <div id="chat-modal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeChatModal()">&times;</span>
+        <span class="close" id="close-chat">&times;</span>
         <h2>💬 ЧатНя</h2>
         <div id="chat-container">
           <div id="chat-messages"></div>
-          <input type="text" id="chat-input" placeholder="Введите сообщение..." />
-          <button id="chat-send">Отправить</button>
+          <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Введите сообщение (макс. 32 символа)...">
+            <button id="send-message-btn">
+              <span class="button-text">Отправить сообщение</span>
+              <span class="diamond-count">
+                <span class="diamond-icon">💎</span>
+                <span class="diamond-value">10 алмазов</span>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+    
+    <!-- Профиль модальное окно -->
+    <div id="profile-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-profile">&times;</span>
+        <h2>👤 Профиль</h2>
+        <div class="profile-container">
+          <div class="profile-header">
+            <div class="profile-info">
+              <h3 id="profile-username">Пользователь</h3>
+              <p id="profile-level">Уровень: 1</p>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <h3>Статистика</h3>
+            <div class="stat-item">
+              <span class="stat-label">🔥 Счёт:</span>
+              <span class="stat-value" id="profile-score">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">🪙 Монеты:</span>
+              <span class="stat-value" id="profile-coins">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">💎 Алмазы:</span>
+              <span class="stat-value" id="profile-diamonds">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">👆 Клики:</span>
+              <span class="stat-value" id="profile-clicks">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Достижения модальное окно -->
+    <div id="achievements-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-achievements">&times;</span>
+        <h2>🏅 Достижения</h2>
+        <div id="achievements-list" class="achievements-list"></div>
+      </div>
+    </div>
+
+    <!-- Всплывающее окно для достижений -->
+    <div id="achievement-popup" class="achievement-popup" style="display: none;">
+      <div class="achievement-popup-icon"></div>
+      <div class="achievement-popup-name"></div>
+      <div class="achievement-popup-description"></div>
+      <div class="achievement-popup-reward"></div>
+      <button class="achievement-popup-close">Закрыть</button>
+    </div>
+
     <div id="error-message"></div>
 
     <audio id="tap-sound"></audio>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="script.js"></script>
+    <script src="js/CharacterManager.js"></script>
+    <script src="js/UpgradeManager.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/ProgressManager.js"></script>
+    <script src="js/ChatManager.js"></script>
+    <script src="js/AchievementManager.js"></script>
+    <script src="js/Game.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

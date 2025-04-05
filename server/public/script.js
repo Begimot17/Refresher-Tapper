@@ -872,23 +872,77 @@ window.addEventListener('click', function (event) {
     closeCustomConfirmModal()
   }
 })
-function openChatModal() {
-  const chatModal = document.getElementById('chat-modal')
-  chatModal.style.display = 'flex'
+// Функция для отправки сообщения
+function sendMessage() {
+  const message = $('#chat-input').val().trim();
+  if (!message) return;
+
+  const userId = Telegram.WebApp.initDataUnsafe.user?.id;
+  const username = Telegram.WebApp.initDataUnsafe.user?.username || username || 'Гость';
+
+  $.ajax({
+    url: '/api/chat/send',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({
+      userId,
+      username,
+      message
+    }),
+    success: function() {
+      $('#chat-input').val(''); // Очищаем поле ввода
+      loadMessages(); // Загружаем новые сообщения
+    },
+    error: function(error) {
+      showError('Не удалось отправить сообщение');
+      console.error('Ошибка отправки:', error);
+    }
+  });
 }
 
-// Функция для закрытия модального окна чата
-function closeChatModal() {
-  const chatModal = document.getElementById('chat-modal')
-  chatModal.style.display = 'none'
+// Функция для загрузки сообщений
+function loadMessages() {
+  $.ajax({
+    url: '/api/chat/messages',
+    method: 'GET',
+    success: function(messages) {
+      const $chatMessages = $('#chat-messages').empty();
+      messages.forEach(msg => {
+        $chatMessages.append(`
+          <div class="message">
+            <strong>${msg.username}:</strong> ${msg.message}
+<!--            <small>${new Date(msg.timestamp).toLocaleTimeString()}</small>-->
+          </div>
+        `);
+      });
+      // Прокручиваем вниз
+      $chatMessages.scrollTop($chatMessages[0].scrollHeight);
+    },
+    error: function(error) {
+      console.error('Ошибка загрузки сообщений:', error);
+    }
+  });
 }
 
-// Закрытие модального окна при клике вне его
-window.addEventListener('click', event => {
-  const chatModal = document.getElementById('chat-modal')
-  if (event.target === chatModal) {
-    closeChatModal()
+// Обработчики событий
+$('#chat-send').on('click', sendMessage);
+$('#chat-input').on('keypress', function(e) {
+  if (e.which === 13) { // Enter
+    sendMessage();
   }
-})
+});
+
+// Загружаем сообщения при открытии чата
+function openChatModal() {
+  $('#chat-modal').show();
+  loadMessages();
+  // Обновляем каждые 5 секунд
+  chatRefreshInterval = setInterval(loadMessages, 5000);
+}
+
+function closeChatModal() {
+  $('#chat-modal').hide();
+  clearInterval(chatRefreshInterval);
+}
 loadProgress()
 updateImage()

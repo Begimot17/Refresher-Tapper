@@ -37,6 +37,7 @@ services:
       - NODE_OPTIONS=--experimental-vm-modules
       - MONGO_URI=${MONGO_URI}
       - NODEMON_ENABLED=true  # Включаем nodemon для автоматической перезагрузки
+    command: npx nodemon --legacy-watch server.js  # Используем nodemon для автоматической перезагрузки
     networks:
       - refresher_tapper_network
 
