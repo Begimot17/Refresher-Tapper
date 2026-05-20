@@ -240,12 +240,17 @@ class ProgressManager {
           // Обновляем UI
           this.game.uiManager.updateUI();
           this.game.uiManager.updateImage();
-          
+
+          // Показываем popup ежедневной награды
+          if (data.dailyRewardAwarded) {
+            this.game.uiManager.showDailyRewardPopup();
+          }
+
           // Применяем эффекты авто-кликера, если он активен
           if (this.game.autoClickerCount > 0) {
             this.game.upgradeManager.applyAutoClickerEffect();
           }
-          
+
           console.log('Progress loaded from server successfully');
         } else {
           console.log('No saved data on server, trying localStorage');

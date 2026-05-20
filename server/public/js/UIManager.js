@@ -90,12 +90,25 @@ class UIManager {
     this.updateSendButtonText();
   }
   
+  updateXPDisplay() {
+    const pct = Math.min((this.game.xp / this.game.xpForLevel) * 100, 100);
+    $('#xp-bar-fill').css('width', `${pct}%`);
+    $('#xp-bar-label').text(`XP: ${this.game.xp} / ${this.game.xpForLevel}`);
+  }
+
+  showDailyRewardPopup() {
+    const $popup = $('<div id="daily-reward-popup">🎁 Ежедневная награда: +1 💎!</div>');
+    $('body').append($popup);
+    setTimeout(() => $popup.fadeOut(400, () => $popup.remove()), 3000);
+  }
+
   updateUI() {
     $('#score').text(this.game.formatNumber(this.game.score));
     $('#coins').text(this.game.formatNumber(this.game.coins));
     $('#level').text(this.game.formatNumber(this.game.level));
     $('#diamonds').text(this.game.formatNumber(this.game.diamonds));
-    
+    this.updateXPDisplay();
+
     // Update send button text
     this.updateSendButtonText();
     

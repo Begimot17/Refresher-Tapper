@@ -26,6 +26,9 @@ coverage/
 .env.test
 .env.production
 
+# SQLite data
+server/data/
+.playwright-mcp
 # Logs
 logs/
 *.log

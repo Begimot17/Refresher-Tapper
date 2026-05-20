@@ -184,7 +184,7 @@ class Game {
     let points = this.multiplier;
     
     // Проверяем критический удар
-    const criticalChance = this.upgradeManager.getUpgradeLevel('Подик') * 0.05; // 5% шанс за уровень
+    const criticalChance = Math.min(this.upgradeManager.getUpgradeLevel('critical-hit') * 0.05, 0.80);
     const isCritical = Math.random() < criticalChance;
     
     if (isCritical) {
@@ -197,7 +197,7 @@ class Game {
     this.updateScore(points);
     
     // Добавляем опыт
-    const xpBoost = 1 + (this.upgradeManager.getUpgradeLevel('Снюс') * 0.15); // 15% за уровень
+    const xpBoost = 1 + (this.upgradeManager.getUpgradeLevel('xp-boost') * 0.15); // 15% за уровень
     const levelScaling = 1 + (this.level * 0.03); // 3% больше опыта за каждый уровень
     const xpGained = Math.max(1, Math.floor(0.15 * levelScaling * xpBoost)); // Гарантируем минимум 1 очко опыта
     
@@ -205,9 +205,6 @@ class Game {
     
     // Проверяем повышение уровня
     this.checkLevelUp();
-    
-    // Применяем эффект авто-кликера
-    this.upgradeManager.applyAutoClickerEffect();
   }
   
   handleTouchStart(event) {
@@ -272,7 +269,7 @@ class Game {
       
       // Сбрасываем опыт и увеличиваем требования для следующего уровня
       this.xp = 0;
-      this.xpForLevel = Math.floor(this.xpForLevel * 1.1); // Уменьшаем увеличение требуемого опыта с 15% до 10%
+      this.xpForLevel = Math.floor(this.xpForLevel * 1.08);
       
       // Начисляем монеты за уровень
       const coinsEarned = this.coinForLevel;

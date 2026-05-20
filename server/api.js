@@ -1,118 +1,128 @@
 const express = require('express')
-const mongoose = require('mongoose')
 const path = require('path')
+const rateLimit = require('express-rate-limit')
+const {createDb} = require('./db')
 
 require('dotenv').config()
 
 const app = express()
 
-console.log('Запуск сервера...')
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'game.db')
+const db = createDb(DB_PATH)
+
+console.log(`🗄️  SQLite: ${DB_PATH}`)
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
-const MONGO_URI = process.env.MONGO_URI
-
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log('✅ Успешное подключение к MongoDB'))
-  .catch(err => console.error('❌ Ошибка подключения к MongoDB:', err))
-
-mongoose.connection.on('error', err => {
-  console.error('❌ Ошибка соединения с MongoDB:', err)
-})
-
-mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB отключен. Повторное подключение...')
-})
-
-const userSchema = new mongoose.Schema({
-  userId: { type: Number, required: true, unique: true },
-  username: { type: String },
-  score: { type: Number, default: 0 },
-  coins: { type: Number, default: 0 },
-  diamonds: { type: Number, default: 0 },
-  level: { type: Number, default: 1 },
-  xp: { type: Number, default: 0 },
-  multiplier: { type: Number, default: 1 },
-  multiplierCount: { type: Number, default: 0 },
-  autoClickerCount: { type: Number, default: 0 },
-  criticalHitCount: { type: Number, default: 0 },
-  coinBonusCount: { type: Number, default: 0 },
-  xpBoostCount: { type: Number, default: 0 },
-  selectedCharacterId: { type: Number, default: null },
-  totalClicks: { type: Number, default: 0 },
-  purchasedPremiumCharacters: { type: [Number], default: [] },
-  achievements: [{
-    id: { type: String, required: true },
-    unlocked: { type: Boolean, default: false }
-  }],
-  lastUpdated: { type: Date, default: Date.now }
-})
-
-const User = mongoose.model('User', userSchema)
+const saveLimiter = rateLimit({windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false})
+const chatLimiter = rateLimit({windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false})
 
 app.use((req, res, next) => {
   console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.url}`)
   next()
 })
 
-app.post('/api/save', async (req, res) => {
-  try {
-    const { userId, username } = req.body;
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
-    
-    const userData = {
-      userId,
-      username,
-      score: req.body.score,
-      coins: req.body.coins,
-      diamonds: req.body.diamonds,
-      level: req.body.level,
-      xp: req.body.xp,
-      multiplier: req.body.multiplier,
-      multiplierCount: req.body.multiplierCount,
-      autoClickerCount: req.body.autoClickerCount,
-      criticalHitCount: req.body.criticalHitCount,
-      coinBonusCount: req.body.coinBonusCount,
-      xpBoostCount: req.body.xpBoostCount,
-      selectedCharacterId: req.body.selectedCharacterId,
-      totalClicks: req.body.totalClicks,
-      purchasedPremiumCharacters: req.body.purchasedPremiumCharacters || [],
-      achievements: req.body.achievements,
-      lastUpdated: new Date()
-    };
-    
-    await User.findOneAndUpdate(
-      { userId },
-      userData,
-      { upsert: true, new: true }
-    );
-    
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error saving user data:', error);
-    res.status(500).json({ error: 'Failed to save user data' });
-  }
-});
+// ─── Prepared statements ─────────────────────────────────────────────────────
 
-app.get('/api/load', async (req, res) => {
+const getUser = db.prepare('SELECT * FROM users WHERE userId = ?')
+
+const upsertUser = db.prepare(`
+  INSERT INTO users (
+    userId, username, score, coins, diamonds, level, xp, multiplier,
+    multiplierCount, autoClickerCount, criticalHitCount, coinBonusCount,
+    xpBoostCount, selectedCharacterId, totalClicks,
+    purchasedPremiumCharacters, achievements, lastUpdated
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  ON CONFLICT(userId) DO UPDATE SET
+    username = excluded.username,
+    score = excluded.score,
+    coins = excluded.coins,
+    diamonds = excluded.diamonds,
+    level = excluded.level,
+    xp = excluded.xp,
+    multiplier = excluded.multiplier,
+    multiplierCount = excluded.multiplierCount,
+    autoClickerCount = excluded.autoClickerCount,
+    criticalHitCount = excluded.criticalHitCount,
+    coinBonusCount = excluded.coinBonusCount,
+    xpBoostCount = excluded.xpBoostCount,
+    selectedCharacterId = excluded.selectedCharacterId,
+    totalClicks = excluded.totalClicks,
+    purchasedPremiumCharacters = excluded.purchasedPremiumCharacters,
+    achievements = excluded.achievements,
+    lastUpdated = datetime('now')
+`)
+
+const updateDailyReward = db.prepare(
+  'UPDATE users SET diamonds = diamonds + 1, lastLoginDate = ? WHERE userId = ?'
+)
+
+const getLeaderboard = db.prepare(
+  'SELECT username, score FROM users ORDER BY score DESC'
+)
+
+const updateDiamonds = db.prepare('UPDATE users SET diamonds = ? WHERE userId = ?')
+
+const insertMessage = db.prepare(
+  'INSERT INTO chat_messages (userId, username, message) VALUES (?, ?, ?)'
+)
+
+const getMessages = db.prepare(
+  'SELECT * FROM chat_messages ORDER BY timestamp DESC LIMIT 50'
+)
+
+// ─── Routes ──────────────────────────────────────────────────────────────────
+
+app.post('/api/save', saveLimiter, (req, res) => {
+  const {userId} = req.body
+  if (!userId) return res.status(400).json({error: 'User ID is required'})
+
   try {
-    const { userId } = req.query;
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
+    upsertUser.run(
+      userId,
+      req.body.username || null,
+      req.body.score || 0,
+      req.body.coins || 0,
+      req.body.diamonds || 0,
+      req.body.level || 1,
+      req.body.xp || 0,
+      req.body.multiplier || 1,
+      req.body.multiplierCount || 0,
+      req.body.autoClickerCount || 0,
+      req.body.criticalHitCount || 0,
+      req.body.coinBonusCount || 0,
+      req.body.xpBoostCount || 0,
+      req.body.selectedCharacterId || null,
+      req.body.totalClicks || 0,
+      JSON.stringify(req.body.purchasedPremiumCharacters || []),
+      JSON.stringify(req.body.achievements || [])
+    )
+    res.json({success: true})
+  } catch (err) {
+    console.error('Error saving user data:', err)
+    res.status(500).json({error: 'Failed to save user data'})
+  }
+})
+
+app.get('/api/load', (req, res) => {
+  const {userId} = req.query
+  if (!userId) return res.status(400).json({error: 'User ID is required'})
+
+  try {
+    const user = getUser.get(Number(userId))
+    if (!user) return res.json(null)
+
+    // Daily login reward
+    const today = new Date().toDateString()
+    const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate).toDateString() : null
+    let dailyRewardAwarded = false
+    if (lastLogin !== today) {
+      updateDailyReward.run(new Date().toISOString(), user.userId)
+      user.diamonds += 1
+      dailyRewardAwarded = true
     }
-    
-    const user = await User.findOne({ userId });
-    
-    if (!user) {
-      return res.json(null);
-    }
-    
+
     res.json({
       score: user.score,
       coins: user.coins,
@@ -127,103 +137,75 @@ app.get('/api/load', async (req, res) => {
       xpBoostCount: user.xpBoostCount,
       selectedCharacterId: user.selectedCharacterId,
       totalClicks: user.totalClicks,
-      purchasedPremiumCharacters: user.purchasedPremiumCharacters || [],
-      achievements: user.achievements
-    });
-  } catch (error) {
-    console.error('Error loading user data:', error);
-    res.status(500).json({ error: 'Failed to load user data' });
+      purchasedPremiumCharacters: JSON.parse(user.purchasedPremiumCharacters || '[]'),
+      achievements: JSON.parse(user.achievements || '[]'),
+      dailyRewardAwarded
+    })
+  } catch (err) {
+    console.error('Error loading user data:', err)
+    res.status(500).json({error: 'Failed to load user data'})
   }
-});
+})
 
-app.get('/api/leaderboard', async (req, res) => {
+app.get('/api/leaderboard', (req, res) => {
   try {
-    const leaderboard = await User.find().sort({score: -1}).select('username score')
-    res.json(leaderboard)
-  } catch (error) {
-    console.error('Ошибка получения таблицы рекордов:', error)
+    res.json(getLeaderboard.all())
+  } catch (err) {
+    console.error('Ошибка получения таблицы рекордов:', err)
     res.status(500).json({message: 'Ошибка сервера'})
   }
 })
+
+app.post('/api/chat/send', chatLimiter, (req, res) => {
+  const {userId, username, message} = req.body
+
+  if (!message || !username) {
+    return res.status(400).json({error: 'Требуется сообщение и имя пользователя'})
+  }
+  if (message.length > 32) {
+    return res.status(400).json({error: 'Сообщение не может быть длиннее 32 символов'})
+  }
+
+  try {
+    db.exec('BEGIN')
+    const user = getUser.get(Number(userId))
+    if (!user) {
+      db.exec('ROLLBACK')
+      return res.status(400).json({error: 'Пользователь не найден'})
+    }
+    if (user.diamonds < 1) {
+      db.exec('ROLLBACK')
+      return res.status(400).json({error: 'Недостаточно алмазов для отправки сообщения'})
+    }
+    updateDiamonds.run(user.diamonds - 1, user.userId)
+    insertMessage.run(user.userId, username, message)
+    db.exec('COMMIT')
+    res.json({success: true, diamonds: user.diamonds - 1})
+  } catch (err) {
+    db.exec('ROLLBACK')
+    console.error('Ошибка отправки сообщения:', err)
+    res.status(500).json({error: 'Ошибка сервера'})
+  }
+})
+
+app.get('/api/chat/messages', (req, res) => {
+  try {
+    res.json(getMessages.all().reverse())
+  } catch (err) {
+    console.error('Ошибка загрузки сообщений:', err)
+    res.status(500).json({error: 'Ошибка сервера'})
+  }
+})
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 })
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен на http://localhost:${PORT}`)
-})
-// Модель для сообщений чата
-const chatMessageSchema = new mongoose.Schema({
-  userId: Number,
-  username: String,
-  message: String,
-  timestamp: { type: Date, default: Date.now }
-});
-const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Сервер запущен на http://localhost:${PORT}`)
+  })
+}
 
-// API для чата
-app.post('/api/chat/send', async (req, res) => {
-  try {
-    const { userId, username, message } = req.body;
-    console.log('Received chat message request:', { userId, username, message });
-
-    if (!message || !username) {
-      console.log('Missing message or username');
-      return res.status(400).json({ error: 'Требуется сообщение и имя пользователя' });
-    }
-
-    // Проверяем, есть ли у пользователя достаточно алмазов
-    const user = await User.findOne({ userId });
-    console.log('Found user:', user ? { userId: user.userId, diamonds: user.diamonds } : 'User not found');
-    
-    if (!user) {
-      console.log('User not found');
-      return res.status(400).json({ error: 'Пользователь не найден' });
-    }
-    
-    // Cost in diamonds to send a message
-    const MESSAGE_COST = 1;
-    
-    if (user.diamonds < MESSAGE_COST) {
-      console.log('Not enough diamonds:', user.diamonds);
-      return res.status(400).json({ error: 'Недостаточно алмазов для отправки сообщения' });
-    }
-
-    // Уменьшаем количество алмазов
-    user.diamonds -= MESSAGE_COST;
-    await user.save();
-    console.log('Diamonds updated:', user.diamonds);
-
-    // Сохраняем сообщение
-    const newMessage = new ChatMessage({
-      userId,
-      username,
-      message: message.substring(0, 200) // Ограничиваем длину
-    });
-
-    await newMessage.save();
-    console.log('Message saved');
-
-    res.status(200).json({ success: true, diamonds: user.diamonds });
-  } catch (error) {
-    console.error('Ошибка сохранения сообщения:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-});
-
-app.get('/api/chat/messages', async (req, res) => {
-  try {
-    const messages = await ChatMessage.find()
-      .sort({ timestamp: -1 })
-      .limit(50)
-      .lean();
-
-    // Переворачиваем, чтобы новые были внизу
-    res.json(messages.reverse());
-  } catch (error) {
-    console.error('Ошибка загрузки сообщений:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-});
-console.log('🛠 Окружение:', process.env)
+module.exports = {app, db}

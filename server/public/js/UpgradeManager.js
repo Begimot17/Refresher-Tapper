@@ -134,7 +134,7 @@ class UpgradeManager {
         const basePoints = Math.floor(this.game.multiplier);
         
         // Check for critical hit
-        const criticalChance = this.getUpgradeLevel('critical-hit') * 0.05; // 5% шанс за уровень
+        const criticalChance = Math.min(this.getUpgradeLevel('critical-hit') * 0.05, 0.80);
         const isCritical = Math.random() < criticalChance;
         const criticalMultiplier = isCritical ? 2 : 1;
         
